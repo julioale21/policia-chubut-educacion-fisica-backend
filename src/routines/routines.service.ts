@@ -1,19 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateRoutineDto } from './dto/create-routine.dto';
 import { UpdateRoutineDto } from './dto/update-routine.dto';
+import { Repository } from 'typeorm';
+import { Routine } from './entities/routine.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class RoutinesService {
-  create(createRoutineDto: CreateRoutineDto) {
-    return 'This action adds a new routine';
+  private readonly logger = new Logger('RoutinesService');
+  constructor(
+    @InjectRepository(Routine)
+    private routinesRepository: Repository<Routine>,
+  ) {}
+
+  async create(createRoutineDto: CreateRoutineDto) {
+    try {
+      const routine = this.routinesRepository.create(createRoutineDto);
+      await this.routinesRepository.save(routine);
+      return routine;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new InternalServerErrorException();
+    }
   }
 
-  findAll() {
-    return `This action returns all routines`;
+  async findAll() {
+    return this.routinesRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} routine`;
+  async findOne(id: string) {
+    const routine = await this.routinesRepository.findOne({ where: { id } });
+
+    if (!routine) {
+      throw new NotFoundException('Routine not found');
+    }
+
+    return routine;
   }
 
   update(id: number, updateRoutineDto: UpdateRoutineDto) {

@@ -1,7 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { RoutinesService } from './routines.service';
 import { CreateRoutineDto } from './dto/create-routine.dto';
 import { UpdateRoutineDto } from './dto/update-routine.dto';
+import { ParseUuidPipe } from 'src/common/pipes/parse-uuid/parse-uuid.pipe';
 
 @Controller('routines')
 export class RoutinesController {
@@ -18,8 +27,8 @@ export class RoutinesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.routinesService.findOne(+id);
+  findOne(@Param('id', ParseUuidPipe) id: string) {
+    return this.routinesService.findOne(id);
   }
 
   @Patch(':id')
