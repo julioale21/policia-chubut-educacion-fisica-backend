@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { RoutineAssignment } from 'src/routine-assignments/entities/routine-assignment.entity';
+import { RoutineExcercise } from 'src/routine-excercises/entities/routine-excercise.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Routine {
@@ -6,7 +8,7 @@ export class Routine {
   id: string;
 
   @Column('text', { unique: true })
-  title: string;
+  name: string;
 
   @Column({
     type: 'text',
@@ -14,9 +16,18 @@ export class Routine {
   })
   description: string;
 
-  @Column({
-    type: 'text',
-    unique: true,
-  })
-  slug: string;
+  @Column()
+  durationInDays: number;
+
+  @Column({ default: false })
+  isGeneral: boolean;
+
+  @OneToMany(() => RoutineAssignment, (assignment) => assignment.routine)
+  routineAssignments: RoutineAssignment[];
+
+  @OneToMany(
+    () => RoutineExcercise,
+    (routineExercise) => routineExercise.routine,
+  )
+  routineExercises: RoutineExcercise[];
 }
