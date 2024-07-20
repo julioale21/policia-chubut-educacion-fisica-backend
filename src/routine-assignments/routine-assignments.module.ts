@@ -8,5 +8,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   controllers: [RoutineAssignmentsController],
   providers: [RoutineAssignmentsService],
   imports: [TypeOrmModule.forFeature([RoutineAssignment])],
+  exports: [TypeOrmModule, RoutineAssignmentsService],
 })
 export class RoutineAssignmentsModule {}

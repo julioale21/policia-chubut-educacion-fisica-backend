@@ -13,10 +13,21 @@ export class User {
 
   @Column({
     type: 'text',
+  })
+  surname: string;
+
+  @Column({
+    type: 'text',
+    unique: true,
+  })
+  dni: string;
+
+  @Column({
+    type: 'text',
     unique: true,
   })
   email: string;
 
-  @OneToMany(() => RoutineAssignment, (assignment) => assignment.routine)
+  @OneToMany(() => RoutineAssignment, (assignment) => assignment.user)
   routineAssignments: RoutineAssignment[];
 }
