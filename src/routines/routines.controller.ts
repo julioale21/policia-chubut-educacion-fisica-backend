@@ -32,12 +32,15 @@ export class RoutinesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoutineDto: UpdateRoutineDto) {
-    return this.routinesService.update(+id, updateRoutineDto);
+  update(
+    @Param('id', ParseUuidPipe) id: string,
+    @Body() updateRoutineDto: UpdateRoutineDto,
+  ) {
+    return this.routinesService.update(id, updateRoutineDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.routinesService.remove(+id);
+  remove(@Param('id', ParseUuidPipe) id: string) {
+    return this.routinesService.remove(id);
   }
 }

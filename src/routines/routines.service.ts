@@ -43,11 +43,27 @@ export class RoutinesService {
     return routine;
   }
 
-  update(id: number, updateRoutineDto: UpdateRoutineDto) {
-    return `This action updates a #${id} routine`;
+  async update(id: string, updateRoutineDto: UpdateRoutineDto) {
+    const routine = await this.routinesRepository.findOne({ where: { id } });
+
+    if (!routine) {
+      throw new NotFoundException('Routine not found');
+    }
+
+    const updatedRoutine = Object.assign(routine, updateRoutineDto);
+
+    await this.routinesRepository.save(updatedRoutine);
+
+    return updatedRoutine;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} routine`;
+  async remove(id: string) {
+    const routine = await this.routinesRepository.findOne({ where: { id } });
+
+    if (!routine) {
+      throw new NotFoundException('Routine not found');
+    }
+
+    await this.routinesRepository.remove(routine);
   }
 }

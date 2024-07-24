@@ -71,10 +71,8 @@ export class UsersService {
 
       Object.assign(user, updateUserDto);
 
-      // Save the updated user
       const updatedUser = await this.usersRepository.save(user);
 
-      // Return the updated user
       return updatedUser;
     } catch (error) {
       this.logger.error(error.message);
