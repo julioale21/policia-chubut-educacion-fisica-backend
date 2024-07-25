@@ -1,8 +1,10 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreateRoutineDto } from './dto/create-routine.dto';
 import { UpdateRoutineDto } from './dto/update-routine.dto';
@@ -19,14 +21,17 @@ export class RoutinesService {
   ) {}
 
   async create(createRoutineDto: CreateRoutineDto) {
-    try {
-      const routine = this.routinesRepository.create(createRoutineDto);
-      await this.routinesRepository.save(routine);
-      return routine;
-    } catch (error) {
-      this.logger.error(error.message);
-      throw new InternalServerErrorException();
+    const exists = await this.routinesRepository.findOne({
+      where: { name: createRoutineDto.name },
+    });
+
+    if (exists) {
+      throw new BadRequestException('Routine already exists');
     }
+
+    const routine = this.routinesRepository.create(createRoutineDto);
+    await this.routinesRepository.save(routine);
+    return routine;
   }
 
   async findAll() {
