@@ -1,11 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { RoutineAssignmentsService } from './routine-assignments.service';
 import { CreateRoutineAssignmentDto } from './dto/create-routine-assignment.dto';
 import { UpdateRoutineAssignmentDto } from './dto/update-routine-assignment.dto';
 
 @Controller('routine-assignments')
 export class RoutineAssignmentsController {
-  constructor(private readonly routineAssignmentsService: RoutineAssignmentsService) {}
+  constructor(
+    private readonly routineAssignmentsService: RoutineAssignmentsService,
+  ) {}
 
   @Post()
   create(@Body() createRoutineAssignmentDto: CreateRoutineAssignmentDto) {
@@ -18,17 +29,23 @@ export class RoutineAssignmentsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.routineAssignmentsService.findOne(+id);
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.routineAssignmentsService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoutineAssignmentDto: UpdateRoutineAssignmentDto) {
-    return this.routineAssignmentsService.update(+id, updateRoutineAssignmentDto);
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateRoutineAssignmentDto: UpdateRoutineAssignmentDto,
+  ) {
+    return this.routineAssignmentsService.update(
+      id,
+      updateRoutineAssignmentDto,
+    );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.routineAssignmentsService.remove(+id);
   }
 }
