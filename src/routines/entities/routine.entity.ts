@@ -3,7 +3,6 @@ import { RoutineExcercise } from 'src/routine-excercises/entities/routine-excerc
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
