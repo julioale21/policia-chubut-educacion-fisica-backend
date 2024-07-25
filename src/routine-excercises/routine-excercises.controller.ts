@@ -1,11 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { RoutineExcercisesService } from './routine-excercises.service';
 import { CreateRoutineExcerciseDto } from './dto/create-routine-excercise.dto';
 import { UpdateRoutineExcerciseDto } from './dto/update-routine-excercise.dto';
 
 @Controller('routine-excercises')
 export class RoutineExcercisesController {
-  constructor(private readonly routineExcercisesService: RoutineExcercisesService) {}
+  constructor(
+    private readonly routineExcercisesService: RoutineExcercisesService,
+  ) {}
 
   @Post()
   create(@Body() createRoutineExcerciseDto: CreateRoutineExcerciseDto) {
@@ -18,17 +29,20 @@ export class RoutineExcercisesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.routineExcercisesService.findOne(+id);
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.routineExcercisesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoutineExcerciseDto: UpdateRoutineExcerciseDto) {
-    return this.routineExcercisesService.update(+id, updateRoutineExcerciseDto);
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateRoutineExcerciseDto: UpdateRoutineExcerciseDto,
+  ) {
+    return this.routineExcercisesService.update(id, updateRoutineExcerciseDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.routineExcercisesService.remove(+id);
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.routineExcercisesService.remove(id);
   }
 }
