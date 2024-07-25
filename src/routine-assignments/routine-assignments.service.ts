@@ -155,8 +155,16 @@ export class RoutineAssignmentsService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} routineAssignment`;
+  async remove(id: string) {
+    const routine_assingment = await this.routineAssignmentRepository.findOne({
+      where: { id: id },
+    });
+
+    if (!routine_assingment) {
+      throw new NotFoundException('Routine Assignment not found');
+    }
+
+    return this.routineAssignmentRepository.remove(routine_assingment);
   }
 
   private parseDate(dateString: string): Date {

@@ -46,6 +46,6 @@ export class RoutineAssignmentsController {
 
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.routineAssignmentsService.remove(+id);
+    return this.routineAssignmentsService.remove(id);
   }
 }
