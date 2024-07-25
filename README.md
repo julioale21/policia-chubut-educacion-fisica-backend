@@ -5,69 +5,97 @@
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
 [circleci-url]: https://circleci.com/gh/nestjs/nest
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+ # Fitness Routine Management System
 
-## Description
+## Project Overview
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This project is a Fitness Routine Management System designed by the Police of the Chubut State, to help trainers assign workout routines to users. It's built using NestJS.
 
-## Installation
+## Key Features
 
-```bash
-$ yarn install
-```
+1. User Management
+2. Routine Creation and Management
+3. Routine Assignment to Users
+4. Exercise Management within Routines
+5. Date-based Scheduling for Routines
 
-## Running the app
+## Core Modules
 
-```bash
-# development
-$ yarn run start
+### User Module
+Handles user registration, authentication, and profile management.
 
-# watch mode
-$ yarn run start:dev
+### Routine Module
+Manages the creation, updating, and deletion of workout routines.
 
-# production mode
-$ yarn run start:prod
-```
+### Exercise Module
+Deals with individual exercises that can be added to routines.
 
-## Test
+### Routine Assignment Module
+Handles the assignment of routines to users, including start and end dates.
 
-```bash
-# unit tests
-$ yarn run test
+## Data Models
 
-# e2e tests
-$ yarn run test:e2e
+- User: Represents registered users (trainers and trainees)
+- Routine: Represents a collection of exercises
+- Exercise: Individual workout activities
+- RoutineAssignment: Links users to routines with specific date ranges
 
-# test coverage
-$ yarn run test:cov
-```
+## Key Technical Aspects
 
-## Support
+1. **Transactional Operations**: Create and update operations use database transactions to ensure data integrity.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+2. **Custom Date Validation**: Implements custom validators to handle date inputs in the format 'dd/mm/yyyy'.
 
-## Stay in touch
+3. **Relation Management**: Utilizes TypeORM's relationship features to manage connections between entities.
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+4. **Data Transfer Objects (DTOs)**: Uses DTOs for input validation and data shaping.
+
+5. **Error Handling**: Implements custom error handling to provide meaningful error messages.
+
+## API Endpoints
+
+- `/users`: User management endpoints
+- `/routines`: Routine CRUD operations
+- `/exercises`: Exercise management
+- `/routine-assignments`: Endpoints for assigning routines to users
+
+## Date Handling
+
+The system expects dates in the format 'dd/mm/yyyy'. These are validated and then converted to appropriate Date objects for database storage.
+
+## Security
+
+- Implements authentication and authorization
+- Uses environment variables for sensitive data
+- Input validation on all endpoints
+
+## Database
+
+Uses PostgreSQL as the primary database, managed through TypeORM.
+
+## Testing
+
+Includes unit tests for services and integration tests for API endpoints.
+
+## Deployment
+
+Configured for easy deployment to cloud platforms like Heroku or AWS.
+
+## Future Enhancements
+
+1. Implement real-time notifications for new routine assignments
+2. Add progress tracking features for users
+3. Integrate with wearable devices for automatic exercise logging
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up environment variables
+4. Start the server: `npm run start:dev`
+
+For detailed setup instructions and contribution guidelines, see CONTRIBUTING.md.
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project is licensed under the MIT License - see the LICENSE.md file for details.
