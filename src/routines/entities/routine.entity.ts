@@ -1,6 +1,13 @@
 import { RoutineAssignment } from 'src/routine-assignments/entities/routine-assignment.entity';
 import { RoutineExcercise } from 'src/routine-excercises/entities/routine-excercise.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class Routine {
@@ -16,11 +23,11 @@ export class Routine {
   })
   description: string;
 
-  @Column()
+  @Column({ type: 'int', nullable: true })
   durationInDays: number;
 
-  @Column({ default: false })
-  isGeneral: boolean;
+  @Column({ default: true })
+  isGeneral?: boolean;
 
   @OneToMany(() => RoutineAssignment, (assignment) => assignment.routine)
   routineAssignments: RoutineAssignment[];
@@ -30,4 +37,10 @@ export class Routine {
     (routineExercise) => routineExercise.routine,
   )
   routineExercises: RoutineExcercise[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

@@ -1,16 +1,26 @@
-import { IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class CreateRoutineDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(3)
-  title: string;
+  name: string;
 
   @IsString()
   @IsOptional()
   description: string;
 
-  @IsString()
+  @IsNotEmpty()
   @IsOptional()
-  slug: string;
+  durationInDays?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  isGeneral?: boolean;
 }

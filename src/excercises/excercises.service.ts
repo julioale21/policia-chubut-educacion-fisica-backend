@@ -1,26 +1,73 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { CreateExcerciseDto } from './dto/create-excercise.dto';
 import { UpdateExcerciseDto } from './dto/update-excercise.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Excercise } from './entities/excercise.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ExcercisesService {
-  create(createExcerciseDto: CreateExcerciseDto) {
-    return 'This action adds a new excercise';
+  private readonly logger = new Logger(ExcercisesService.name);
+  constructor(
+    @InjectRepository(Excercise)
+    private readonly excercisesRepository: Repository<Excercise>,
+  ) {}
+  async create(createExcerciseDto: CreateExcerciseDto) {
+    try {
+      const exercise = this.excercisesRepository.create(createExcerciseDto);
+
+      return await this.excercisesRepository.save(exercise);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new UnprocessableEntityException(error.message);
+    }
   }
 
   findAll() {
-    return `This action returns all excercises`;
+    return this.excercisesRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} excercise`;
+  async findOne(id: string) {
+    const excercise = await this.excercisesRepository.findOne({
+      where: { id },
+    });
+
+    if (!excercise) {
+      throw new UnprocessableEntityException('Excercise not found');
+    }
+
+    return excercise;
   }
 
-  update(id: number, updateExcerciseDto: UpdateExcerciseDto) {
-    return `This action updates a #${id} excercise`;
+  async update(id: string, updateExcerciseDto: UpdateExcerciseDto) {
+    const excercise = await this.excercisesRepository.findOne({
+      where: { id },
+    });
+
+    if (!excercise) {
+      throw new UnprocessableEntityException('Excercise not found');
+    }
+
+    const updatedExercise = Object.assign(excercise, updateExcerciseDto);
+
+    await this.excercisesRepository.save(updatedExercise);
+
+    return updatedExercise;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} excercise`;
+  async remove(id: string) {
+    const excercise = await this.excercisesRepository.findOne({
+      where: { id },
+    });
+
+    if (!excercise) {
+      throw new UnprocessableEntityException('Excercise not found');
+    }
+
+    return await this.excercisesRepository.remove(excercise);
   }
 }

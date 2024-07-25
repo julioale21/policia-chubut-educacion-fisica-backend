@@ -1,6 +1,6 @@
 import {
+  BadRequestException,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -19,14 +19,17 @@ export class RoutinesService {
   ) {}
 
   async create(createRoutineDto: CreateRoutineDto) {
-    try {
-      const routine = this.routinesRepository.create(createRoutineDto);
-      await this.routinesRepository.save(routine);
-      return routine;
-    } catch (error) {
-      this.logger.error(error.message);
-      throw new InternalServerErrorException();
+    const exists = await this.routinesRepository.findOne({
+      where: { name: createRoutineDto.name },
+    });
+
+    if (exists) {
+      throw new BadRequestException('Routine already exists');
     }
+
+    const routine = this.routinesRepository.create(createRoutineDto);
+    await this.routinesRepository.save(routine);
+    return routine;
   }
 
   async findAll() {
@@ -43,11 +46,27 @@ export class RoutinesService {
     return routine;
   }
 
-  update(id: number, updateRoutineDto: UpdateRoutineDto) {
-    return `This action updates a #${id} routine`;
+  async update(id: string, updateRoutineDto: UpdateRoutineDto) {
+    const routine = await this.routinesRepository.findOne({ where: { id } });
+
+    if (!routine) {
+      throw new NotFoundException('Routine not found');
+    }
+
+    const updatedRoutine = Object.assign(routine, updateRoutineDto);
+
+    await this.routinesRepository.save(updatedRoutine);
+
+    return updatedRoutine;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} routine`;
+  async remove(id: string) {
+    const routine = await this.routinesRepository.findOne({ where: { id } });
+
+    if (!routine) {
+      throw new NotFoundException('Routine not found');
+    }
+
+    await this.routinesRepository.remove(routine);
   }
 }

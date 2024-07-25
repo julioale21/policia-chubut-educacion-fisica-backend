@@ -1,5 +1,12 @@
 import { RoutineAssignment } from 'src/routine-assignments/entities/routine-assignment.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class User {
@@ -13,10 +20,27 @@ export class User {
 
   @Column({
     type: 'text',
+  })
+  surname: string;
+
+  @Column({
+    type: 'text',
+    unique: true,
+  })
+  dni: string;
+
+  @Column({
+    type: 'text',
     unique: true,
   })
   email: string;
 
-  @OneToMany(() => RoutineAssignment, (assignment) => assignment.routine)
+  @OneToMany(() => RoutineAssignment, (assignment) => assignment.user)
   routineAssignments: RoutineAssignment[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
