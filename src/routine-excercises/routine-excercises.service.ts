@@ -86,12 +86,15 @@ export class RoutineExcercisesService {
   }
 
   async findAll() {
-    return await this.routineExerciseRepository.find();
+    return await this.routineExerciseRepository.find({
+      relations: ['routine', 'exercise'],
+    });
   }
 
   findOne(id: string) {
     const routineExercise = this.routineExerciseRepository.findOne({
       where: { id },
+      relations: ['routine', 'exercise'],
     });
 
     if (!routineExercise) {

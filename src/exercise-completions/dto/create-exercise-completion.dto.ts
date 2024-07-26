@@ -10,7 +10,7 @@ import { IsDateFormat } from 'src/common/validators/is-date-format.validator';
 export class CreateExerciseCompletionDto {
   @IsDateFormat()
   @IsOptional()
-  completionDate?: Date;
+  completionDate?: string;
 
   @IsPositive()
   @IsOptional()

@@ -51,6 +51,9 @@ export class ExerciseCompletionsService {
 
       const newExerciseCompletion = this.exerciseCompletionRepository.create({
         ...completionData,
+        completionDate: completionData.completionDate
+          ? this.parseDate(completionData.completionDate)
+          : null,
         exercise,
         routineAssignment,
       });
@@ -71,12 +74,15 @@ export class ExerciseCompletionsService {
   }
 
   async findAll() {
-    return await this.exerciseCompletionRepository.find();
+    return await this.exerciseCompletionRepository.find({
+      relations: ['exercise', 'routineAssignment'],
+    });
   }
 
   async findOne(id: string) {
     const exerciseCompletion = await this.exerciseCompletionRepository.findOne({
       where: { id },
+      relations: ['exercise', 'routineAssignment'],
     });
 
     if (!exerciseCompletion) {
@@ -135,6 +141,10 @@ export class ExerciseCompletionsService {
         exerciseCompletion.routineAssignment = routineAssignment;
       }
 
+      if (updateData.completionDate) {
+        updateData.completionDate = this.parseDate(updateData.completionDate);
+      }
+
       // Update other fields
       Object.assign(exerciseCompletion, updateData);
 
@@ -164,5 +174,11 @@ export class ExerciseCompletionsService {
     }
 
     return await this.exerciseCompletionRepository.remove(exerciseCompletion);
+  }
+
+  private parseDate(dateString: string): string | null {
+    if (!dateString) return null;
+    const [day, month, year] = dateString.split('/');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
 }
