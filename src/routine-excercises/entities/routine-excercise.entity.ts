@@ -2,10 +2,12 @@ import { Excercise } from 'src/excercises/entities/excercise.entity';
 import { Routine } from 'src/routines/entities/routine.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
   Unique,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -22,4 +24,10 @@ export class RoutineExcercise {
 
   @ManyToOne(() => Excercise, (exercise) => exercise.routineExercises)
   exercise: Excercise;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

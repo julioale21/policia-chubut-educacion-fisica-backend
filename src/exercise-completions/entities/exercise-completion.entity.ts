@@ -1,4 +1,11 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Excercise } from 'src/excercises/entities/excercise.entity';
 import { RoutineAssignment } from 'src/routine-assignments/entities/routine-assignment.entity';
 
@@ -7,24 +14,30 @@ export class ExerciseCompletion {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Excercise)
-  exercise: Excercise;
-
-  @Column()
+  @Column({ type: 'date', nullable: true })
   completionDate: Date;
 
-  @Column()
+  @Column({ nullable: true })
   actualRepetitions: number;
 
-  @Column()
+  @Column({ nullable: true })
   actualDuration: number;
 
   @Column({ nullable: true })
   notes: string;
+
+  @ManyToOne(() => Excercise)
+  exercise: Excercise;
 
   @ManyToOne(
     () => RoutineAssignment,
     (assignment) => assignment.exerciseCompletions,
   )
   routineAssignment: RoutineAssignment;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
