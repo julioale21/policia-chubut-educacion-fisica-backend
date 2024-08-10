@@ -1,5 +1,5 @@
+import { RoutineExercise } from 'src/routine-excercises/entities/routine-excercise.entity';
 import { RoutineAssignment } from 'src/routine-assignments/entities/routine-assignment.entity';
-import { RoutineExcercise } from 'src/routine-excercises/entities/routine-excercise.entity';
 import {
   Column,
   CreateDateColumn,
@@ -33,10 +33,10 @@ export class Routine {
   routineAssignments: RoutineAssignment[];
 
   @OneToMany(
-    () => RoutineExcercise,
+    () => RoutineExercise,
     (routineExercise) => routineExercise.routine,
   )
-  routineExercises: RoutineExcercise[];
+  routineExercises: RoutineExercise[];
 
   @CreateDateColumn()
   createdAt: Date;

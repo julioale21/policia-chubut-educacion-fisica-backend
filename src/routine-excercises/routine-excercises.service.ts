@@ -1,25 +1,32 @@
+import { Exercise } from 'src/excercises/entities/excercise.entity';
+import { RoutineExercise } from 'src/routine-excercises/entities/routine-excercise.entity';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRoutineExcerciseDto } from './dto/create-routine-excercise.dto';
 import { UpdateRoutineExcerciseDto } from './dto/update-routine-excercise.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RoutineExcercise } from './entities/routine-excercise.entity';
 import { DataSource, Repository } from 'typeorm';
 import { Routine } from 'src/routines/entities/routine.entity';
-import { Excercise } from 'src/excercises/entities/excercise.entity';
 
 @Injectable()
 export class RoutineExcercisesService {
   constructor(
-    @InjectRepository(RoutineExcercise)
-    private routineExerciseRepository: Repository<RoutineExcercise>,
+    @InjectRepository(RoutineExercise)
+    private routineExerciseRepository: Repository<RoutineExercise>,
     @InjectRepository(Routine)
     private routineRepository: Repository<Routine>,
-    @InjectRepository(Excercise)
-    private exerciseRepository: Repository<Excercise>,
+    @InjectRepository(Exercise)
+    private exerciseRepository: Repository<Exercise>,
     private dataSource: DataSource,
   ) {}
   async create(createRoutineExcerciseDto: CreateRoutineExcerciseDto) {
-    const { routineId, excerciseId, dayOfRoutine } = createRoutineExcerciseDto;
+    const {
+      routineId,
+      excerciseId,
+      dayOfRoutine,
+      duration,
+      repetitions,
+      restTimeBetweenSets,
+    } = createRoutineExcerciseDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -62,10 +69,13 @@ export class RoutineExcercisesService {
       }
 
       // Create new RoutineExercise
-      const routineExercise = new RoutineExcercise();
+      const routineExercise = new RoutineExercise();
       routineExercise.routine = routine;
       routineExercise.exercise = exercise;
       routineExercise.dayOfRoutine = dayOfRoutine;
+      routineExercise.duration = duration;
+      routineExercise.repetitions = repetitions;
+      routineExercise.restTimeBetweenSets = restTimeBetweenSets;
 
       // Save the new RoutineExercise
       const savedRoutineExercise =

@@ -3,7 +3,7 @@ import { CreateExerciseCompletionDto } from './dto/create-exercise-completion.dt
 import { UpdateExerciseCompletionDto } from './dto/update-exercise-completion.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExerciseCompletion } from './entities/exercise-completion.entity';
-import { Excercise } from 'src/excercises/entities/excercise.entity';
+import { Exercise } from 'src/excercises/entities/excercise.entity';
 import { DataSource, Repository } from 'typeorm';
 import { RoutineAssignment } from 'src/routine-assignments/entities/routine-assignment.entity';
 
@@ -12,8 +12,8 @@ export class ExerciseCompletionsService {
   constructor(
     @InjectRepository(ExerciseCompletion)
     private exerciseCompletionRepository: Repository<ExerciseCompletion>,
-    @InjectRepository(Excercise)
-    private exerciseRepository: Repository<Excercise>,
+    @InjectRepository(Exercise)
+    private exerciseRepository: Repository<Exercise>,
     @InjectRepository(RoutineAssignment)
     private routineAssignmentRepository: Repository<RoutineAssignment>,
     private dataSource: DataSource,

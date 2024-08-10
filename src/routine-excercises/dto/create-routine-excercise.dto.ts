@@ -13,6 +13,21 @@ export class CreateRoutineExcerciseDto {
   @IsOptional()
   dayOfRoutine?: number;
 
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  duration?: number;
+
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  repetitions?: number;
+
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  restTimeBetweenSets?: number;
+
   @IsUUID()
   @IsNotEmpty()
   @IsString()

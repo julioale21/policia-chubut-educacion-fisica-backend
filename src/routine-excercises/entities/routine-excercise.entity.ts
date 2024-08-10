@@ -1,4 +1,4 @@
-import { Excercise } from 'src/excercises/entities/excercise.entity';
+import { Exercise } from 'src/excercises/entities/excercise.entity';
 import { Routine } from 'src/routines/entities/routine.entity';
 import {
   Column,
@@ -10,20 +10,29 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity()
 @Unique(['routine', 'exercise'])
-export class RoutineExcercise {
+@Entity()
+export class RoutineExercise {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   dayOfRoutine: number;
 
+  @Column({ nullable: true })
+  duration: number;
+
+  @Column({ nullable: true })
+  repetitions: number;
+
+  @Column()
+  restTimeBetweenSets: number;
+
   @ManyToOne(() => Routine, (routine) => routine.routineExercises)
   routine: Routine;
 
-  @ManyToOne(() => Excercise, (exercise) => exercise.routineExercises)
-  exercise: Excercise;
+  @ManyToOne(() => Exercise, (exercise) => exercise.routineExercises)
+  exercise: Exercise;
 
   @CreateDateColumn()
   createdAt: Date;

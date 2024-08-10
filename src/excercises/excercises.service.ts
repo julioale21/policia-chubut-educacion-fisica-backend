@@ -6,15 +6,15 @@ import {
 import { CreateExcerciseDto } from './dto/create-excercise.dto';
 import { UpdateExcerciseDto } from './dto/update-excercise.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Excercise } from './entities/excercise.entity';
+import { Exercise } from './entities/excercise.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class ExcercisesService {
   private readonly logger = new Logger(ExcercisesService.name);
   constructor(
-    @InjectRepository(Excercise)
-    private readonly excercisesRepository: Repository<Excercise>,
+    @InjectRepository(Exercise)
+    private readonly excercisesRepository: Repository<Exercise>,
   ) {}
   async create(createExcerciseDto: CreateExcerciseDto) {
     try {

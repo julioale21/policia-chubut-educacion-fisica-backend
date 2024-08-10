@@ -2,7 +2,6 @@ import {
   IsEnum,
   IsNotEmpty,
   IsOptional,
-  IsPositive,
   IsString,
   IsUrl,
   MinLength,
@@ -24,19 +23,7 @@ export class CreateExcerciseDto {
   @IsUrl()
   imageUrl?: string;
 
-  @IsPositive()
-  @IsOptional()
-  duration?: number;
-
-  @IsPositive()
-  @IsOptional()
-  repetitions?: number;
-
   @IsNotEmpty()
   @IsEnum(ExerciseCategory)
   category: ExerciseCategory;
-
-  @IsPositive()
-  @IsNotEmpty()
-  restTimeBetweenSets: number;
 }

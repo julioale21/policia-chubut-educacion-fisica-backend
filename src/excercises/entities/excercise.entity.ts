@@ -1,5 +1,5 @@
 import { ExerciseCategory } from 'src/common/enums/excersises-category.enum';
-import { RoutineExcercise } from 'src/routine-excercises/entities/routine-excercise.entity';
+import { RoutineExercise } from 'src/routine-excercises/entities/routine-excercise.entity';
 import {
   Column,
   CreateDateColumn,
@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class Excercise {
+export class Exercise {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -23,27 +23,18 @@ export class Excercise {
   @Column({ nullable: true })
   imageUrl: string;
 
-  @Column({ nullable: true })
-  duration: number;
-
-  @Column({ nullable: true })
-  repetitions: number;
-
   @Column({
     type: 'enum',
     enum: ExerciseCategory,
     default: ExerciseCategory.STRENGTH,
   })
-  category: string;
-
-  @Column()
-  restTimeBetweenSets: number;
+  category: ExerciseCategory;
 
   @OneToMany(
-    () => RoutineExcercise,
+    () => RoutineExercise,
     (routineExercise) => routineExercise.exercise,
   )
-  routineExercises: RoutineExcercise[];
+  routineExercises: RoutineExercise[];
 
   @CreateDateColumn()
   createdAt: Date;
