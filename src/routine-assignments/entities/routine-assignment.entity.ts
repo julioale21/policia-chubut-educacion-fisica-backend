@@ -1,6 +1,7 @@
+import { User } from 'src/auth/entities/user.entity';
 import { ExerciseCompletion } from 'src/exercise-completions/entities/exercise-completion.entity';
 import { Routine } from 'src/routines/entities/routine.entity';
-import { User } from 'src/users/entities/user.entity';
+
 import {
   Column,
   CreateDateColumn,

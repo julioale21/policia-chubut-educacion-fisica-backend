@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoutinesModule } from './routines/routines.module';
-import { UsersModule } from './users/users.module';
 import { RoutineAssignmentsModule } from './routine-assignments/routine-assignments.module';
 import { RoutineExcercisesModule } from './routine-excercises/routine-excercises.module';
 import { ExcercisesModule } from './excercises/excercises.module';
 import { ExerciseCompletionsModule } from './exercise-completions/exercise-completions.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -23,11 +23,11 @@ import { ExerciseCompletionsModule } from './exercise-completions/exercise-compl
       synchronize: true,
     }),
     RoutinesModule,
-    UsersModule,
     RoutineAssignmentsModule,
     RoutineExcercisesModule,
     ExcercisesModule,
     ExerciseCompletionsModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

@@ -4,8 +4,8 @@ import { UpdateRoutineAssignmentDto } from './dto/update-routine-assignment.dto'
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoutineAssignment } from './entities/routine-assignment.entity';
 import { DataSource, Repository } from 'typeorm';
-import { User } from 'src/users/entities/user.entity';
 import { Routine } from 'src/routines/entities/routine.entity';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class RoutineAssignmentsService {
