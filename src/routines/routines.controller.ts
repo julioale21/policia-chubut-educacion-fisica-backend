@@ -11,6 +11,8 @@ import { RoutinesService } from './routines.service';
 import { CreateRoutineDto } from './dto/create-routine.dto';
 import { UpdateRoutineDto } from './dto/update-routine.dto';
 import { ParseUuidPipe } from 'src/common/pipes/parse-uuid/parse-uuid.pipe';
+import { Auth } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
 
 @Controller('routines')
 export class RoutinesController {
@@ -22,6 +24,7 @@ export class RoutinesController {
   }
 
   @Get()
+  @Auth(ValidRoles.user, ValidRoles.admin, ValidRoles.test)
   findAll() {
     return this.routinesService.findAll();
   }

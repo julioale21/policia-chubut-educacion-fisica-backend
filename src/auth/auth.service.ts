@@ -97,4 +97,11 @@ export class AuthService {
     });
     await this.userRepository.save(user);
   }
+
+  async checkAuthStatus(user: User) {
+    return {
+      ...user,
+      token: this.getJwtToken({ id: user.id }),
+    };
+  }
 }
