@@ -1,8 +1,8 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './dto';
-import { AuthGuard } from '@nestjs/passport';
-import { GetUser } from './decorators';
+import { Auth, GetUser } from './decorators';
+import { User } from './entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -28,10 +28,9 @@ export class AuthController {
     return this.authService.createSuperAdmin();
   }
 
-  @Get('private')
-  @UseGuards(AuthGuard())
-  privateRoute(@GetUser('email') user) {
-    console.log(user);
-    return 'I am a private route';
+  @Get('check-status')
+  @Auth()
+  checkAuthStatus(@GetUser() user: User) {
+    return this.authService.checkAuthStatus(user);
   }
 }
