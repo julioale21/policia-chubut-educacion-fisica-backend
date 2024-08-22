@@ -14,6 +14,13 @@ async function bootstrap() {
   );
 
   app.setGlobalPrefix('api/v1');
+
+  app.enableCors({
+    origin: 'http://localhost:3001', // Reemplaza esto con el origen de tu frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
+  });
+
   await app.listen(3000);
 }
 bootstrap();
