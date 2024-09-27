@@ -1,9 +1,13 @@
+import { CreateRoutineExerciseDto } from './../../routine-excercises/dto/create-routine-excercise.dto';
 import {
   IsBoolean,
   IsNotEmpty,
   IsOptional,
   IsString,
   MinLength,
+  IsInt,
+  Min,
+  IsArray,
 } from 'class-validator';
 
 export class CreateRoutineDto {
@@ -14,13 +18,17 @@ export class CreateRoutineDto {
 
   @IsString()
   @IsOptional()
-  description: string;
+  description?: string;
 
+  @IsInt()
+  @Min(1)
   @IsNotEmpty()
-  @IsOptional()
-  durationInDays?: number;
+  durationInDays: number;
 
   @IsBoolean()
   @IsOptional()
-  isGeneral?: boolean;
+  isActive?: boolean;
+
+  @IsArray()
+  routineExercises: CreateRoutineExerciseDto[];
 }

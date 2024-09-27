@@ -7,7 +7,7 @@ import {
   IsUUID,
 } from 'class-validator';
 
-export class CreateRoutineExcerciseDto {
+export class CreateRoutineExerciseDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
@@ -31,10 +31,5 @@ export class CreateRoutineExcerciseDto {
   @IsUUID()
   @IsNotEmpty()
   @IsString()
-  routineId: string;
-
-  @IsUUID()
-  @IsNotEmpty()
-  @IsString()
-  excerciseId: string;
+  exerciseId: string;
 }

@@ -21,20 +21,16 @@ export class AuthService {
     return await this.userRepository.find();
   }
   async create(createUserDto: CreateUserDto) {
-    try {
-      const { password, ...userData } = createUserDto;
+    const { password, ...userData } = createUserDto;
 
-      const user = this.userRepository.create({
-        ...userData,
-        password: bcrypt.hashSync(password, 10),
-      });
+    const user = this.userRepository.create({
+      ...userData,
+      password: bcrypt.hashSync(password, 10),
+    });
 
-      await this.userRepository.save(user);
-      delete user.password;
-      return user;
-    } catch (error) {
-      this.handleDBExceptions(error);
-    }
+    await this.userRepository.save(user);
+    delete user.password;
+    return user;
   }
 
   async login(loginUserDto: LoginUserDto) {

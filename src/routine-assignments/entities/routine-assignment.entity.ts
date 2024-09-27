@@ -1,7 +1,6 @@
 import { User } from 'src/auth/entities/user.entity';
-import { ExerciseCompletion } from 'src/exercise-completions/entities/exercise-completion.entity';
 import { Routine } from 'src/routines/entities/routine.entity';
-
+import { ExerciseCompletion } from 'src/exercise-completions/entities/exercise-completion.entity';
 import {
   Column,
   CreateDateColumn,
@@ -24,7 +23,7 @@ export class RoutineAssignment {
   endDate: Date;
 
   @ManyToOne(() => User, (user) => user.routineAssignments)
-  user: User;
+  student: User;
 
   @ManyToOne(() => Routine, (routine) => routine.routineAssignments)
   routine: Routine;

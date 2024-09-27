@@ -15,7 +15,7 @@ export class ExerciseCompletion {
   id: string;
 
   @Column({ type: 'date', nullable: true })
-  completionDate: string;
+  completionDate: Date;
 
   @Column({ nullable: true })
   actualRepetitions: number;

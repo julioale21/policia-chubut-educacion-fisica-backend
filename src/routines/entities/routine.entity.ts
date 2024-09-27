@@ -1,9 +1,11 @@
+import { User } from 'src/auth/entities/user.entity';
 import { RoutineExercise } from 'src/routine-excercises/entities/routine-excercise.entity';
 import { RoutineAssignment } from 'src/routine-assignments/entities/routine-assignment.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -23,11 +25,14 @@ export class Routine {
   })
   description: string;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int' })
   durationInDays: number;
 
   @Column({ default: true })
-  isGeneral?: boolean;
+  isActive: boolean;
+
+  @ManyToOne(() => User)
+  trainer: User;
 
   @OneToMany(() => RoutineAssignment, (assignment) => assignment.routine)
   routineAssignments: RoutineAssignment[];

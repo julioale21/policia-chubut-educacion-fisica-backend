@@ -3,14 +3,16 @@ import { IsDateFormat } from 'src/common/validators/is-date-format.validator';
 
 export class CreateRoutineAssignmentDto {
   @IsDateFormat()
+  @IsNotEmpty()
   startDate: string;
 
   @IsDateFormat()
+  @IsNotEmpty()
   endDate: string;
 
   @IsUUID()
   @IsNotEmpty()
-  userId: string;
+  studentId: string;
 
   @IsUUID()
   @IsNotEmpty()

@@ -5,6 +5,7 @@ import {
   IsString,
   IsUrl,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 import { ExerciseCategory } from 'src/common/enums/excersises-category.enum';
 
@@ -18,10 +19,10 @@ export class CreateExcerciseDto {
   @IsOptional()
   description?: string;
 
-  @IsString()
   @IsOptional()
+  @ValidateIf((o) => o.imageUrl !== null && o.imageUrl !== '')
   @IsUrl()
-  imageUrl?: string;
+  imageUrl?: string | null;
 
   @IsNotEmpty()
   @IsEnum(ExerciseCategory)

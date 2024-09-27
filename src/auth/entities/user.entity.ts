@@ -56,7 +56,7 @@ export class User {
   })
   roles: string[];
 
-  @OneToMany(() => RoutineAssignment, (assignment) => assignment.user)
+  @OneToMany(() => RoutineAssignment, (assignment) => assignment.student)
   routineAssignments: RoutineAssignment[];
 
   @CreateDateColumn()

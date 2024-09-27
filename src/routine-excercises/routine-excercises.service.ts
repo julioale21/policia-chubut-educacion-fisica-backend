@@ -1,14 +1,20 @@
-import { Exercise } from 'src/excercises/entities/excercise.entity';
-import { RoutineExercise } from 'src/routine-excercises/entities/routine-excercise.entity';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateRoutineExcerciseDto } from './dto/create-routine-excercise.dto';
 import { UpdateRoutineExcerciseDto } from './dto/update-routine-excercise.dto';
+
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Routine } from 'src/routines/entities/routine.entity';
+import { RoutineExercise } from './entities/routine-excercise.entity';
+import { Exercise } from 'src/excercises/entities/excercise.entity';
+import { CreateRoutineExerciseDto } from './dto/create-routine-excercise.dto';
 
 @Injectable()
-export class RoutineExcercisesService {
+export class RoutineExercisesService {
   constructor(
     @InjectRepository(RoutineExercise)
     private routineExerciseRepository: Repository<RoutineExercise>,
@@ -18,23 +24,17 @@ export class RoutineExcercisesService {
     private exerciseRepository: Repository<Exercise>,
     private dataSource: DataSource,
   ) {}
-  async create(createRoutineExcerciseDto: CreateRoutineExcerciseDto) {
-    const {
-      routineId,
-      excerciseId,
-      dayOfRoutine,
-      duration,
-      repetitions,
-      restTimeBetweenSets,
-    } = createRoutineExcerciseDto;
 
+  async create(
+    routineId: string,
+    createRoutineExerciseDto: CreateRoutineExerciseDto,
+  ) {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // Find the routine
       const routine = await this.routineRepository.findOne({
         where: { id: routineId },
       });
@@ -42,67 +42,58 @@ export class RoutineExcercisesService {
         throw new NotFoundException(`Routine with ID "${routineId}" not found`);
       }
 
-      // Find the exercise
       const exercise = await this.exerciseRepository.findOne({
-        where: { id: excerciseId },
+        where: { id: createRoutineExerciseDto.exerciseId },
       });
       if (!exercise) {
         throw new NotFoundException(
-          `Exercise with ID "${excerciseId}" not found`,
+          `Exercise with ID "${createRoutineExerciseDto.exerciseId}" not found`,
         );
       }
 
-      // Check if the combination already exists
       const existingRoutineExercise =
         await this.routineExerciseRepository.findOne({
           where: {
             routine: { id: routineId },
-            exercise: { id: excerciseId },
-            dayOfRoutine: dayOfRoutine,
+            exercise: { id: createRoutineExerciseDto.exerciseId },
+            dayOfRoutine: createRoutineExerciseDto.dayOfRoutine,
           },
         });
 
       if (existingRoutineExercise) {
-        throw new Error(
+        throw new ConflictException(
           'This exercise is already assigned to this routine for this day',
         );
       }
 
-      // Create new RoutineExercise
-      const routineExercise = new RoutineExercise();
-      routineExercise.routine = routine;
-      routineExercise.exercise = exercise;
-      routineExercise.dayOfRoutine = dayOfRoutine;
-      routineExercise.duration = duration;
-      routineExercise.repetitions = repetitions;
-      routineExercise.restTimeBetweenSets = restTimeBetweenSets;
+      const routineExercise = this.routineExerciseRepository.create({
+        ...createRoutineExerciseDto,
+        routine,
+        exercise,
+      });
 
-      // Save the new RoutineExercise
       const savedRoutineExercise =
         await queryRunner.manager.save(routineExercise);
 
-      // Commit the transaction
       await queryRunner.commitTransaction();
 
       return savedRoutineExercise;
     } catch (err) {
-      // If we encounter an error, rollback the changes
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
-      // Release the query runner
       await queryRunner.release();
     }
   }
 
   async findAll() {
-    return await this.routineExerciseRepository.find({
+    return this.routineExerciseRepository.find({
       relations: ['routine', 'exercise'],
     });
   }
 
-  findOne(id: string) {
-    const routineExercise = this.routineExerciseRepository.findOne({
+  async findOne(id: string) {
+    const routineExercise = await this.routineExerciseRepository.findOne({
       where: { id },
       relations: ['routine', 'exercise'],
     });
@@ -116,10 +107,8 @@ export class RoutineExcercisesService {
 
   async update(
     id: string,
-    updateRoutineExcerciseDto: UpdateRoutineExcerciseDto,
+    updateRoutineExerciseDto: UpdateRoutineExcerciseDto,
   ) {
-    const { routineId, excerciseId, dayOfRoutine } = updateRoutineExcerciseDto;
-
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -137,44 +126,36 @@ export class RoutineExcercisesService {
         );
       }
 
-      if (routineId && routineId !== routineExercise.routine.id) {
-        const newRoutine = await this.routineRepository.findOne({
-          where: { id: routineId },
-        });
-        if (!newRoutine) {
-          throw new NotFoundException(
-            `Routine with ID "${routineId}" not found`,
-          );
-        }
-        routineExercise.routine = newRoutine;
-      }
-
-      if (excerciseId && excerciseId !== routineExercise.exercise.id) {
+      if (
+        updateRoutineExerciseDto.exerciseId &&
+        updateRoutineExerciseDto.exerciseId !== routineExercise.exercise.id
+      ) {
         const newExercise = await this.exerciseRepository.findOne({
-          where: { id: excerciseId },
+          where: { id: updateRoutineExerciseDto.exerciseId },
         });
         if (!newExercise) {
           throw new NotFoundException(
-            `Exercise with ID "${excerciseId}" not found`,
+            `Exercise with ID "${updateRoutineExerciseDto.exerciseId}" not found`,
           );
         }
         routineExercise.exercise = newExercise;
       }
 
-      if (dayOfRoutine) {
-        routineExercise.dayOfRoutine = dayOfRoutine;
-      }
+      Object.assign(routineExercise, updateRoutineExerciseDto);
 
       const existingRoutineExercise =
         await this.routineExerciseRepository.findOne({
           where: {
             routine: { id: routineExercise.routine.id },
             exercise: { id: routineExercise.exercise.id },
+            dayOfRoutine: routineExercise.dayOfRoutine,
           },
         });
 
       if (existingRoutineExercise && existingRoutineExercise.id !== id) {
-        throw new Error('This exercise is already assigned to this routine');
+        throw new ConflictException(
+          'This exercise is already assigned to this routine for this day',
+        );
       }
 
       const updatedRoutineExercise =
@@ -192,14 +173,14 @@ export class RoutineExcercisesService {
   }
 
   async remove(id: string) {
-    const routine = await this.routineExerciseRepository.findOne({
+    const routineExercise = await this.routineExerciseRepository.findOne({
       where: { id },
     });
 
-    if (!routine) {
+    if (!routineExercise) {
       throw new NotFoundException(`Routine Exercise with ID "${id}" not found`);
     }
 
-    return this.routineExerciseRepository.remove(routine);
+    return this.routineExerciseRepository.remove(routineExercise);
   }
 }

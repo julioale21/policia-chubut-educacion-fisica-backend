@@ -1,3 +1,4 @@
+import { CreateRoutineExerciseDto } from './dto/create-routine-excercise.dto';
 import {
   Controller,
   Get,
@@ -7,20 +8,27 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  ValidationPipe,
 } from '@nestjs/common';
-import { RoutineExcercisesService } from './routine-excercises.service';
-import { CreateRoutineExcerciseDto } from './dto/create-routine-excercise.dto';
+
 import { UpdateRoutineExcerciseDto } from './dto/update-routine-excercise.dto';
+import { RoutineExercisesService } from './routine-excercises.service';
 
 @Controller('routine-excercises')
 export class RoutineExcercisesController {
   constructor(
-    private readonly routineExcercisesService: RoutineExcercisesService,
+    private readonly routineExcercisesService: RoutineExercisesService,
   ) {}
 
-  @Post()
-  create(@Body() createRoutineExcerciseDto: CreateRoutineExcerciseDto) {
-    return this.routineExcercisesService.create(createRoutineExcerciseDto);
+  @Post(':routineId')
+  create(
+    @Param('routineId', ParseUUIDPipe) routineId: string,
+    @Body(ValidationPipe) createRoutineExerciseDto: CreateRoutineExerciseDto,
+  ) {
+    return this.routineExcercisesService.create(
+      routineId,
+      createRoutineExerciseDto,
+    );
   }
 
   @Get()
