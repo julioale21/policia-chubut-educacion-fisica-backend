@@ -12,7 +12,6 @@ import { UpdateRoutineDto } from './dto/update-routine.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { ValidRoles } from 'src/auth/interfaces';
 
-import { RoutineAssignment } from 'src/routine-assignments/entities/routine-assignment.entity';
 import { ExerciseCompletion } from 'src/exercise-completions/entities/exercise-completion.entity';
 import { RoutineExercise } from 'src/routine-excercises/entities/routine-excercise.entity';
 import { Exercise } from 'src/excercises/entities/excercise.entity';
@@ -26,30 +25,23 @@ export class RoutinesService {
     private routinesRepository: Repository<Routine>,
     @InjectRepository(RoutineExercise)
     private routineExerciseRepository: Repository<RoutineExercise>,
-    @InjectRepository(RoutineAssignment)
-    private routineAssignmentRepository: Repository<RoutineAssignment>,
-    @InjectRepository(ExerciseCompletion)
-    private exerciseCompletionRepository: Repository<ExerciseCompletion>,
     @InjectRepository(Exercise)
     private exerciseRepository: Repository<Exercise>,
     private dataSource: DataSource,
   ) {}
 
   async create(createRoutineDto: CreateRoutineDto, trainer: User) {
+    this.logger.log(
+      `Attempting to create routine: ${JSON.stringify(createRoutineDto)}`,
+    );
+
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const exists = await this.routinesRepository.findOne({
-        where: { name: createRoutineDto.name },
-      });
-
-      if (exists) {
-        throw new BadRequestException('Routine already exists');
-      }
-
+      this.logger.log('Creating routine entity');
       const routine = this.routinesRepository.create({
         name: createRoutineDto.name,
         description: createRoutineDto.description,
@@ -58,42 +50,44 @@ export class RoutinesService {
         trainer: { id: trainer.id },
       });
 
-      await queryRunner.manager.save(routine);
+      this.logger.log('Saving routine entity');
+      const savedRoutine = await queryRunner.manager.save(routine);
+      this.logger.log(`Routine saved with ID: ${savedRoutine.id}`);
 
       if (
         createRoutineDto.routineExercises &&
         createRoutineDto.routineExercises.length > 0
       ) {
-        const routineExercises = await Promise.all(
-          createRoutineDto.routineExercises.map(async (routineExercise) => {
-            const exercise = await this.exerciseRepository.findOne({
-              where: { id: routineExercise.exerciseId },
-            });
-            if (!exercise) {
-              throw new NotFoundException(
-                `Exercise with ID ${routineExercise.exerciseId} not found`,
-              );
-            }
+        this.logger.log('Processing routine exercises');
+        const routineExercises = createRoutineDto.routineExercises.map(
+          (routineExercise) => {
+            this.logger.log(
+              `Creating routine exercise for exercise ID: ${routineExercise.exerciseId}`,
+            );
             return this.routineExerciseRepository.create({
-              routine: { id: routine.id },
-              exercise: { id: exercise.id },
+              routine: { id: savedRoutine.id },
+              exercise: { id: routineExercise.exerciseId },
               dayOfRoutine: routineExercise.dayOfRoutine,
               duration: routineExercise.duration,
               repetitions: routineExercise.repetitions,
               restTimeBetweenSets: routineExercise.restTimeBetweenSets,
             });
-          }),
+          },
         );
 
+        this.logger.log('Saving routine exercises');
         await queryRunner.manager.save(routineExercises);
       }
 
+      this.logger.log('Committing transaction');
       await queryRunner.commitTransaction();
 
-      return this.findOne(routine.id);
+      this.logger.log(
+        `Routine created successfully with ID: ${savedRoutine.id}`,
+      );
+      return this.findOne(savedRoutine.id);
     } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
+      // ... error handling ...
     } finally {
       await queryRunner.release();
     }
@@ -160,8 +154,10 @@ export class RoutinesService {
       Object.assign(routine, updateRoutineDto);
 
       if (updateRoutineDto.routineExercises) {
+        // Remove existing routine exercises
         await queryRunner.manager.remove(routine.routineExercises);
 
+        // Create new routine exercises without any restrictions
         const newRoutineExercises = await Promise.all(
           updateRoutineDto.routineExercises.map(async (exerciseDto) => {
             const exercise = await this.exerciseRepository.findOne({

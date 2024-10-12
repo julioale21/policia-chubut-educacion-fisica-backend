@@ -6,11 +6,9 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Unique(['routine', 'exercise'])
 @Entity()
 export class RoutineExercise {
   @PrimaryGeneratedColumn('uuid')
@@ -24,6 +22,9 @@ export class RoutineExercise {
 
   @Column({ nullable: true })
   repetitions: number;
+
+  @Column({ nullable: true })
+  sets: number;
 
   @Column()
   restTimeBetweenSets: number;

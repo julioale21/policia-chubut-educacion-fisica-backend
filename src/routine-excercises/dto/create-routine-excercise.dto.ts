@@ -16,6 +16,11 @@ export class CreateRoutineExerciseDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
+  sets?: number;
+
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
   duration?: number;
 
   @IsNumber()
