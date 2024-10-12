@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { RoutinesService } from './routines.service';
 import { CreateRoutineDto } from './dto/create-routine.dto';
@@ -27,13 +28,14 @@ export class RoutinesController {
   }
 
   @Get()
-  @Auth(ValidRoles.user, ValidRoles.trainer, ValidRoles.admin)
-  findAll() {
-    return this.routinesService.findAll();
+  @Auth()
+  findAll(@Req() req) {
+    const user = req.user as User;
+    return this.routinesService.findAll(user);
   }
 
   @Get(':id')
-  @Auth(ValidRoles.user, ValidRoles.trainer, ValidRoles.admin)
+  @Auth()
   findOne(@Param('id', ParseUuidPipe) id: string) {
     return this.routinesService.findOne(id);
   }

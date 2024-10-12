@@ -93,17 +93,61 @@ export class RoutinesService {
     }
   }
 
-  async findAll() {
-    return this.routinesRepository
+  async findAll(user: User) {
+    let queryBuilder = this.routinesRepository
       .createQueryBuilder('routine')
       .leftJoinAndSelect('routine.trainer', 'trainer')
-      .leftJoinAndSelect('routine.routineExercises', 'routineExercises')
-      .leftJoinAndSelect('routineExercises.exercise', 'exercise')
+      .leftJoinAndSelect('routine.routineAssignments', 'routineAssignments')
+      .leftJoinAndSelect('routineAssignments.student', 'student')
       .loadRelationCountAndMap(
-        'routine.studentCount',
-        'routine.routineAssignments',
+        'routine.exerciseCount',
+        'routine.routineExercises',
+      );
+
+    // If the user is not an admin, super-user, or trainer, filter routines
+    if (
+      !user.roles.some((role) =>
+        [ValidRoles.admin, ValidRoles.supeUser, ValidRoles.trainer].includes(
+          role as ValidRoles,
+        ),
       )
-      .getMany();
+    ) {
+      queryBuilder = queryBuilder.innerJoin(
+        'routineAssignments.student',
+        'assignedStudent',
+        'assignedStudent.id = :userId',
+        { userId: user.id },
+      );
+    }
+
+    const routines = await queryBuilder.getMany();
+
+    return routines.map((routine) => ({
+      id: routine.id,
+      name: routine.name,
+      description: routine.description,
+      durationInDays: routine.durationInDays,
+      isActive: routine.isActive,
+      createdAt: routine.createdAt,
+      updatedAt: routine.updatedAt,
+      trainer: {
+        id: routine.trainer.id,
+        name: routine.trainer.name,
+        email: routine.trainer.email,
+      },
+      exerciseCount: (routine as any).exerciseCount,
+      assignments: routine.routineAssignments.map((assignment) => ({
+        id: assignment.id,
+        startDate: assignment.startDate,
+        endDate: assignment.endDate,
+        student: {
+          id: assignment.student.id,
+          name: assignment.student.name,
+          email: assignment.student.email,
+        },
+      })),
+      studentCount: routine.routineAssignments.length,
+    }));
   }
 
   async findOne(id: string) {
@@ -112,18 +156,38 @@ export class RoutinesService {
       .leftJoinAndSelect('routine.trainer', 'trainer')
       .leftJoinAndSelect('routine.routineExercises', 'routineExercises')
       .leftJoinAndSelect('routineExercises.exercise', 'exercise')
-      .loadRelationCountAndMap(
-        'routine.studentCount',
-        'routine.routineAssignments',
+      .leftJoinAndSelect('routine.routineAssignments', 'routineAssignments')
+      .leftJoinAndSelect('routineAssignments.student', 'student')
+      .leftJoinAndSelect(
+        'routineAssignments.exerciseCompletions',
+        'exerciseCompletions',
       )
+      .leftJoinAndSelect('exerciseCompletions.exercise', 'completedExercise')
       .where('routine.id = :id', { id })
       .getOne();
 
     if (!routine) {
-      throw new NotFoundException('Routine not found');
+      throw new NotFoundException(`Routine with ID "${id}" not found`);
     }
 
-    return routine;
+    // Transformamos solo los campos necesarios
+    return {
+      ...routine,
+      trainer: {
+        id: routine.trainer.id,
+        name: routine.trainer.name,
+        email: routine.trainer.email,
+      },
+      routineAssignments: routine.routineAssignments.map((assignment) => ({
+        ...assignment,
+        student: {
+          id: assignment.student.id,
+          name: assignment.student.name,
+          email: assignment.student.email,
+        },
+      })),
+      studentCount: routine.routineAssignments.length,
+    };
   }
 
   async update(id: string, updateRoutineDto: UpdateRoutineDto, user: User) {
