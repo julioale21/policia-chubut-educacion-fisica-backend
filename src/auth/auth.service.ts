@@ -148,6 +148,7 @@ export class AuthService {
       password: bcrypt.hashSync(superAdminPassword, 10),
       roles: [superAdminRole],
       name: 'Super Admin',
+      isActive: true,
     });
     await this.userRepository.save(user);
   }
