@@ -136,16 +136,6 @@ export class RoutinesService {
         email: routine.trainer.email,
       },
       exerciseCount: (routine as any).exerciseCount,
-      assignments: routine.routineAssignments.map((assignment) => ({
-        id: assignment.id,
-        startDate: assignment.startDate,
-        endDate: assignment.endDate,
-        student: {
-          id: assignment.student.id,
-          name: assignment.student.name,
-          email: assignment.student.email,
-        },
-      })),
       studentCount: routine.routineAssignments.length,
     }));
   }

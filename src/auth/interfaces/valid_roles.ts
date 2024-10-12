@@ -3,5 +3,4 @@ export enum ValidRoles {
   trainer = 'trainer',
   user = 'user',
   supeUser = 'super-user',
-  test = 'test',
 }

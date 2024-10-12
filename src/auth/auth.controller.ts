@@ -13,6 +13,16 @@ export class AuthController {
     return this.authService.getUsers();
   }
 
+  @Get('students')
+  getStudents() {
+    return this.authService.getStudents();
+  }
+
+  @Get('trainers')
+  getTrainers() {
+    return this.authService.getTrainers();
+  }
+
   @Post('register')
   createUser(@Body() createUserDto: CreateUserDto) {
     return this.authService.create(createUserDto);

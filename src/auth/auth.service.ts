@@ -1,21 +1,78 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { ArrayContains, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces';
+import { Routine } from 'src/routines/entities/routine.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Routine)
+    private readonly routineRepository: Repository<Routine>,
     private configService: ConfigService,
     private readonly jwtService: JwtService,
   ) {}
+
+  async getStudents() {
+    return await this.userRepository.find({
+      where: {
+        roles: ArrayContains(['user']),
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        surname: true,
+        dni: true,
+        isActive: true,
+        routineAssignments: {
+          id: true,
+          startDate: true,
+          endDate: true,
+          routine: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      relations: ['routineAssignments', 'routineAssignments.routine'],
+    });
+  }
+
+  async getTrainers() {
+    const trainers = await this.userRepository.query(`
+      SELECT id, email, name, surname, dni, "isActive"
+      FROM "users"
+      WHERE roles && ARRAY['super-user', 'admin', 'trainer']::text[]
+    `);
+
+    const trainerIds = trainers.map((trainer) => trainer.id);
+
+    const routineCounts = await this.routineRepository
+      .createQueryBuilder('routine')
+      .select('routine.trainerId', 'trainerId')
+      .addSelect('COUNT(routine.id)', 'count')
+      .where('routine.trainerId IN (:...trainerIds)', { trainerIds })
+      .groupBy('routine.trainerId')
+      .getRawMany();
+
+    const routineCountMap = new Map(
+      routineCounts.map((item) => [item.trainerId, parseInt(item.count, 10)]),
+    );
+
+    return trainers.map((trainer) => ({
+      ...trainer,
+      isActive: trainer.isActive === 'true', // Convert string to boolean
+      routineCount: routineCountMap.get(trainer.id) || 0,
+    }));
+  }
 
   async getUsers() {
     return await this.userRepository.find();
