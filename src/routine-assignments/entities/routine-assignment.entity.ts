@@ -8,10 +8,17 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
+@Unique('unique_student_routine_dates', [
+  'student',
+  'routine',
+  'startDate',
+  'endDate',
+])
 export class RoutineAssignment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
