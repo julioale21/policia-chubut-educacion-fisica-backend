@@ -8,7 +8,7 @@ import {
   Delete,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { RoutineAssignmentsService } from './routine-assignments.service';
+import { RoutineAssignmentsService } from './services/routine-assignments.service';
 import { CreateRoutineAssignmentDto } from './dto/create-routine-assignment.dto';
 import { UpdateRoutineAssignmentDto } from './dto/update-routine-assignment.dto';
 

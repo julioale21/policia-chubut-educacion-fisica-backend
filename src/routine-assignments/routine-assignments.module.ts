@@ -1,16 +1,22 @@
 import { Module } from '@nestjs/common';
-import { RoutineAssignmentsService } from './routine-assignments.service';
-import { RoutineAssignmentsController } from './routine-assignments.controller';
-import { RoutineAssignment } from './entities/routine-assignment.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RoutineAssignmentsService } from './services/routine-assignments.service';
 
-import { Routine } from 'src/routines/entities/routine.entity';
+import { RoutineAssignmentErrorHandler } from './services/routine-assignment-error-handler.service';
+import { RoutineAssignment } from './entities/routine-assignment.entity';
 import { User } from 'src/auth/entities/user.entity';
+import { Routine } from 'src/routines/entities/routine.entity';
+import { RoutineAssignmentValidatorService } from './services/routine-assignments-validator.service';
+import { RoutineAssignmentsController } from './routine-assignments.controller';
 
 @Module({
   controllers: [RoutineAssignmentsController],
-  providers: [RoutineAssignmentsService],
   imports: [TypeOrmModule.forFeature([RoutineAssignment, User, Routine])],
-  exports: [TypeOrmModule, RoutineAssignmentsService],
+  providers: [
+    RoutineAssignmentsService,
+    RoutineAssignmentValidatorService,
+    RoutineAssignmentErrorHandler,
+  ],
+  exports: [RoutineAssignmentsService],
 })
 export class RoutineAssignmentsModule {}
