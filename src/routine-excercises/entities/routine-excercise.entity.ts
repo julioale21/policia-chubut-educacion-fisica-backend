@@ -26,7 +26,7 @@ export class RoutineExercise {
   @Column({ nullable: true })
   sets: number;
 
-  @Column()
+  @Column({ nullable: true })
   restTimeBetweenSets: number;
 
   @ManyToOne(() => Routine, (routine) => routine.routineExercises)

@@ -30,6 +30,69 @@ export class RoutinesService {
     private dataSource: DataSource,
   ) {}
 
+  // async create(createRoutineDto: CreateRoutineDto, trainer: User) {
+  //   this.logger.log(
+  //     `Attempting to create routine: ${JSON.stringify(createRoutineDto)}`,
+  //   );
+
+  //   const queryRunner = this.dataSource.createQueryRunner();
+
+  //   await queryRunner.connect();
+  //   await queryRunner.startTransaction();
+
+  //   try {
+  //     this.logger.log('Creating routine entity');
+  //     const routine = this.routinesRepository.create({
+  //       name: createRoutineDto.name,
+  //       description: createRoutineDto.description,
+  //       durationInDays: createRoutineDto.durationInDays,
+  //       isActive: createRoutineDto.isActive ?? true,
+  //       trainer: { id: trainer.id },
+  //     });
+
+  //     this.logger.log('Saving routine entity');
+  //     const savedRoutine = await queryRunner.manager.save(routine);
+  //     this.logger.log(`Routine saved with ID: ${savedRoutine.id}`);
+
+  //     if (
+  //       createRoutineDto.routineExercises &&
+  //       createRoutineDto.routineExercises.length > 0
+  //     ) {
+  //       this.logger.log('Processing routine exercises');
+  //       const routineExercises = createRoutineDto.routineExercises.map(
+  //         (routineExercise) => {
+  //           this.logger.log(
+  //             `Creating routine exercise for exercise ID: ${routineExercise.exerciseId}`,
+  //           );
+  //           return this.routineExerciseRepository.create({
+  //             routine: { id: savedRoutine.id },
+  //             exercise: { id: routineExercise.exerciseId },
+  //             dayOfRoutine: routineExercise.dayOfRoutine,
+  //             duration: routineExercise.duration,
+  //             repetitions: routineExercise.repetitions,
+  //             restTimeBetweenSets: routineExercise.restTimeBetweenSets,
+  //           });
+  //         },
+  //       );
+
+  //       this.logger.log('Saving routine exercises');
+  //       await queryRunner.manager.save(routineExercises);
+  //     }
+
+  //     this.logger.log('Committing transaction');
+  //     await queryRunner.commitTransaction();
+
+  //     this.logger.log(
+  //       `Routine created successfully with ID: ${savedRoutine.id}`,
+  //     );
+  //     return this.findOne(savedRoutine.id);
+  //   } catch (error) {
+  //     // ... error handling ...
+  //   } finally {
+  //     await queryRunner.release();
+  //   }
+  // }
+
   async create(createRoutineDto: CreateRoutineDto, trainer: User) {
     this.logger.log(
       `Attempting to create routine: ${JSON.stringify(createRoutineDto)}`,
@@ -41,6 +104,18 @@ export class RoutinesService {
     await queryRunner.startTransaction();
 
     try {
+      // Validar ejercicios antes de iniciar la transacción
+      if (createRoutineDto.routineExercises?.length > 0) {
+        const exerciseIds = createRoutineDto.routineExercises.map(
+          (e) => e.exerciseId,
+        );
+        const exercises = await this.exerciseRepository.findByIds(exerciseIds);
+
+        if (exercises.length !== exerciseIds.length) {
+          throw new BadRequestException('Some exercises do not exist');
+        }
+      }
+
       this.logger.log('Creating routine entity');
       const routine = this.routinesRepository.create({
         name: createRoutineDto.name,
@@ -51,32 +126,30 @@ export class RoutinesService {
       });
 
       this.logger.log('Saving routine entity');
-      const savedRoutine = await queryRunner.manager.save(routine);
+      const savedRoutine = await queryRunner.manager.save(Routine, routine);
       this.logger.log(`Routine saved with ID: ${savedRoutine.id}`);
 
-      if (
-        createRoutineDto.routineExercises &&
-        createRoutineDto.routineExercises.length > 0
-      ) {
+      if (createRoutineDto.routineExercises?.length > 0) {
         this.logger.log('Processing routine exercises');
         const routineExercises = createRoutineDto.routineExercises.map(
           (routineExercise) => {
             this.logger.log(
               `Creating routine exercise for exercise ID: ${routineExercise.exerciseId}`,
             );
-            return this.routineExerciseRepository.create({
+            return queryRunner.manager.create(RoutineExercise, {
               routine: { id: savedRoutine.id },
               exercise: { id: routineExercise.exerciseId },
               dayOfRoutine: routineExercise.dayOfRoutine,
               duration: routineExercise.duration,
               repetitions: routineExercise.repetitions,
+              sets: routineExercise.sets,
               restTimeBetweenSets: routineExercise.restTimeBetweenSets,
             });
           },
         );
 
         this.logger.log('Saving routine exercises');
-        await queryRunner.manager.save(routineExercises);
+        await queryRunner.manager.save(RoutineExercise, routineExercises);
       }
 
       this.logger.log('Committing transaction');
@@ -85,10 +158,22 @@ export class RoutinesService {
       this.logger.log(
         `Routine created successfully with ID: ${savedRoutine.id}`,
       );
-      return this.findOne(savedRoutine.id);
+
+      // Buscar la rutina completa fuera de la transacción
+      return await this.findOne(savedRoutine.id);
     } catch (error) {
-      // ... error handling ...
+      this.logger.error(`Error creating routine: ${error.message}`);
+      await queryRunner.rollbackTransaction();
+
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new BadRequestException(
+        'Error creating routine. Please try again.',
+      );
     } finally {
+      // Liberar el queryRunner incluso si hay errores
       await queryRunner.release();
     }
   }
