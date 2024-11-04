@@ -1,8 +1,8 @@
 export enum ExerciseCategory {
-  STRENGTH = 'STRENGTH',
-  CARDIO = 'CARDIO',
-  FLEXIBILITY = 'FLEXIBILITY',
   BALANCE = 'BALANCE',
-  PLYOMETRIC = 'PLYOMETRIC',
+  CARDIO = 'CARDIO',
+  FLEXIBILIDAD = 'FLEXIBILIDAD',
+  FUERZA = 'FUERZA',
+  RESISTENCIA = 'RESISTENCIA',
   // Add more categories as needed
 }
