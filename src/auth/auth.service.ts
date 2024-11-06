@@ -11,7 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from './interfaces';
+import { JwtPayload, ValidRoles } from './interfaces';
 import { Routine } from 'src/routines/entities/routine.entity';
 import { UpdateUserDto } from './dto';
 
@@ -52,29 +52,43 @@ export class AuthService {
   }
 
   async getTrainers() {
-    const trainers = await this.userRepository.query(`
-      SELECT id, email, name, surname, dni, "isActive"
-      FROM "users"
-      WHERE roles && ARRAY['super-user', 'admin', 'trainer']::text[]
-    `);
+    // Obtener trainers usando TypeORM
+    const trainers = await this.userRepository.find({
+      where: [
+        { roles: ArrayContains([ValidRoles.trainer]) },
+        { roles: ArrayContains([ValidRoles.admin]) },
+        { roles: ArrayContains([ValidRoles.supeUser]) },
+      ],
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        surname: true,
+        dni: true,
+        isActive: true,
+      },
+    });
 
-    const trainerIds = trainers.map((trainer) => trainer.id);
+    if (!trainers.length) return [];
 
+    // Obtener el conteo de rutinas usando TypeORM QueryBuilder
     const routineCounts = await this.routineRepository
       .createQueryBuilder('routine')
       .select('routine.trainerId', 'trainerId')
       .addSelect('COUNT(routine.id)', 'count')
-      .where('routine.trainerId IN (:...trainerIds)', { trainerIds })
+      .where('routine.trainerId IN (:...trainerIds)', {
+        trainerIds: trainers.map((t) => t.id),
+      })
       .groupBy('routine.trainerId')
       .getRawMany();
 
     const routineCountMap = new Map(
-      routineCounts.map((item) => [item.trainerId, parseInt(item.count, 10)]),
+      routineCounts.map((item) => [item.trainerId, Number(item.count)]),
     );
 
+    // Combinar los resultados
     return trainers.map((trainer) => ({
       ...trainer,
-      isActive: trainer.isActive === 'true', // Convert string to boolean
       routineCount: routineCountMap.get(trainer.id) || 0,
     }));
   }
@@ -145,9 +159,6 @@ export class AuthService {
     const superAdminPassword = this.configService.get<string>(
       'SUPER_USER_PASSWORD',
     );
-    const superAdminRole =
-      this.configService.get<string>('SUPER_USER_ROLE') || 'super-user';
-
     if (await this.userRepository.findOneBy({ email: superAdminEmail })) {
       return;
     }
@@ -155,7 +166,7 @@ export class AuthService {
     const user = this.userRepository.create({
       email: superAdminEmail,
       password: bcrypt.hashSync(superAdminPassword, 10),
-      roles: [superAdminRole],
+      roles: [ValidRoles.supeUser],
       name: 'Super Admin',
       isActive: true,
     });

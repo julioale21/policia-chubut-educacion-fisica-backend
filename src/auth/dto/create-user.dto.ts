@@ -1,11 +1,14 @@
 import {
+  IsArray,
   IsBoolean,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
 } from 'class-validator';
+import { ValidRoles } from '../interfaces';
 
 export class CreateUserDto {
   @IsString()
@@ -40,4 +43,9 @@ export class CreateUserDto {
     },
   )
   password: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsEnum(ValidRoles, { each: true })
+  roles?: ValidRoles[];
 }

@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ValidRoles } from '../interfaces';
 
 @Entity('users')
 export class User {
@@ -50,11 +51,12 @@ export class User {
   isActive: boolean;
 
   @Column({
-    type: 'text',
+    type: 'enum',
+    enum: ValidRoles,
     array: true,
-    default: ['user'],
+    default: [ValidRoles.user],
   })
-  roles: string[];
+  roles: ValidRoles[];
 
   @OneToMany(() => RoutineAssignment, (assignment) => assignment.student)
   routineAssignments: RoutineAssignment[];
