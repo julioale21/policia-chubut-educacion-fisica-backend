@@ -26,7 +26,7 @@ export class Exercise {
   @Column({
     type: 'enum',
     enum: ExerciseCategory,
-    default: ExerciseCategory.STRENGTH,
+    default: ExerciseCategory.FUERZA,
   })
   category: ExerciseCategory;
 
