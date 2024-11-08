@@ -129,6 +129,7 @@ export class AuthService {
       select: {
         email: true,
         id: true,
+        name: true,
         password: true,
         roles: true,
       },
