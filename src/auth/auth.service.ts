@@ -52,7 +52,6 @@ export class AuthService {
   }
 
   async getTrainers() {
-    // Obtener trainers usando TypeORM
     const trainers = await this.userRepository.find({
       where: [
         { roles: ArrayContains([ValidRoles.trainer]) },
@@ -71,7 +70,6 @@ export class AuthService {
 
     if (!trainers.length) return [];
 
-    // Obtener el conteo de rutinas usando TypeORM QueryBuilder
     const routineCounts = await this.routineRepository
       .createQueryBuilder('routine')
       .select('routine.trainerId', 'trainerId')
@@ -86,7 +84,6 @@ export class AuthService {
       routineCounts.map((item) => [item.trainerId, Number(item.count)]),
     );
 
-    // Combinar los resultados
     return trainers.map((trainer) => ({
       ...trainer,
       routineCount: routineCountMap.get(trainer.id) || 0,

@@ -6,8 +6,10 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import { ValidRoles } from '../interfaces';
+import { MedicalInfo } from '../interfaces/medical-info.interface';
 
 @Entity('users')
 export class User {
@@ -57,6 +59,58 @@ export class User {
     default: [ValidRoles.user],
   })
   roles: ValidRoles[];
+
+  @Column({
+    type: 'date',
+    nullable: true,
+  })
+  birthDate?: Date;
+
+  @Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+  })
+  height?: number;
+
+  @Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+  })
+  initialWeight?: number;
+
+  @Column({
+    type: 'text',
+    nullable: true,
+  })
+  phone?: string;
+
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+  })
+  lastLogin?: Date;
+
+  @Column({
+    type: 'text',
+    nullable: true,
+  })
+  profileImageUrl?: string;
+
+  @Index()
+  @Column({
+    type: 'text',
+    nullable: true,
+  })
+  force?: string;
+
+  @Column({
+    nullable: true,
+  })
+  medicalInfo?: MedicalInfo;
 
   @OneToMany(() => RoutineAssignment, (assignment) => assignment.student)
   routineAssignments: RoutineAssignment[];
