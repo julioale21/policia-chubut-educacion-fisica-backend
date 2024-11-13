@@ -109,6 +109,7 @@ export class User {
 
   @Column({
     nullable: true,
+    type: 'jsonb',
   })
   medicalInfo?: MedicalInfo;
 

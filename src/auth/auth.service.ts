@@ -1,5 +1,7 @@
 import {
+  ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -106,16 +108,93 @@ export class AuthService {
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.preload({
-      id,
-      ...updateUserDto,
-    });
+  async getUserById(id: string) {
+    const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('User not found');
     }
+    delete user.password;
+    return user;
+  }
 
-    return this.userRepository.save(user);
+  // async update(id: string, updateUserDto: UpdateUserDto) {
+  //   const user = await this.userRepository.preload({
+  //     id,
+  //     ...updateUserDto,
+  //   });
+  //   if (!user) {
+  //     throw new NotFoundException('User not found');
+  //   }
+
+  //   return this.userRepository.save(user);
+  // }
+
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    try {
+      const existingUser = await this.userRepository.findOne({
+        where: { id },
+        relations: ['routineAssignments'],
+      });
+
+      if (!existingUser) {
+        throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+      }
+
+      if (updateUserDto.email) {
+        const userWithEmail = await this.userRepository.findOne({
+          where: { email: updateUserDto.email },
+        });
+        if (userWithEmail && userWithEmail.id !== id) {
+          throw new ConflictException(
+            `El email ${updateUserDto.email} ya está en uso`,
+          );
+        }
+      }
+
+      if (updateUserDto.dni) {
+        const userWithDni = await this.userRepository.findOne({
+          where: { dni: updateUserDto.dni },
+        });
+        if (userWithDni && userWithDni.id !== id) {
+          throw new ConflictException(
+            `El DNI ${updateUserDto.dni} ya está en uso`,
+          );
+        }
+      }
+
+      const user = await this.userRepository.preload({
+        id,
+        ...updateUserDto,
+        createdAt: existingUser.createdAt,
+        routineAssignments: existingUser.routineAssignments,
+      });
+
+      if (updateUserDto.medicalInfo) {
+        user.medicalInfo = {
+          ...existingUser.medicalInfo,
+          ...updateUserDto.medicalInfo,
+        };
+      }
+
+      const updatedUser = await this.userRepository.save(user);
+
+      delete updatedUser.password;
+
+      return updatedUser;
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ConflictException
+      ) {
+        throw error;
+      }
+
+      console.error('Error updating user:', error);
+
+      throw new InternalServerErrorException(
+        'Error al actualizar el usuario. Por favor, intente nuevamente.',
+      );
+    }
   }
 
   async login(loginUserDto: LoginUserDto) {

@@ -21,6 +21,11 @@ export class AuthController {
     return this.authService.getUsers();
   }
 
+  @Get('users/:id')
+  getUser(@Param('id', ParseUUIDPipe) id: string) {
+    return this.authService.getUserById(id);
+  }
+
   @Get('students')
   getStudents() {
     return this.authService.getStudents();
@@ -41,6 +46,7 @@ export class AuthController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
+    console.log(updateUserDto);
     return this.authService.update(id, updateUserDto);
   }
 
