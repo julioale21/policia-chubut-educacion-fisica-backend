@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { Routine } from './entities/routine.entity';
 import { CreateRoutineDto } from './dto/create-routine.dto';
 import { UpdateRoutineDto } from './dto/update-routine.dto';
@@ -109,9 +109,14 @@ export class RoutinesService {
         const exerciseIds = createRoutineDto.routineExercises.map(
           (e) => e.exerciseId,
         );
-        const exercises = await this.exerciseRepository.findByIds(exerciseIds);
 
-        if (exercises.length !== exerciseIds.length) {
+        const filteredExerciseIds = Array.from(new Set(exerciseIds));
+
+        const exercises = await this.exerciseRepository.findBy({
+          id: In(filteredExerciseIds),
+        });
+
+        if (exercises.length !== filteredExerciseIds.length) {
           throw new BadRequestException('Some exercises do not exist');
         }
       }
@@ -159,7 +164,6 @@ export class RoutinesService {
         `Routine created successfully with ID: ${savedRoutine.id}`,
       );
 
-      // Buscar la rutina completa fuera de la transacción
       return await this.findOne(savedRoutine.id);
     } catch (error) {
       this.logger.error(`Error creating routine: ${error.message}`);
@@ -173,7 +177,6 @@ export class RoutinesService {
         'Error creating routine. Please try again.',
       );
     } finally {
-      // Liberar el queryRunner incluso si hay errores
       await queryRunner.release();
     }
   }
@@ -245,7 +248,6 @@ export class RoutinesService {
       throw new NotFoundException(`Routine with ID "${id}" not found`);
     }
 
-    // Transformamos solo los campos necesarios
     return {
       ...routine,
       trainer: {

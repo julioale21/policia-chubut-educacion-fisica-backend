@@ -46,7 +46,6 @@ export class AuthController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    console.log(updateUserDto);
     return this.authService.update(id, updateUserDto);
   }
 
