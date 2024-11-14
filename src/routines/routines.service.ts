@@ -104,7 +104,6 @@ export class RoutinesService {
     await queryRunner.startTransaction();
 
     try {
-      // Validar ejercicios antes de iniciar la transacción
       if (createRoutineDto.routineExercises?.length > 0) {
         const exerciseIds = createRoutineDto.routineExercises.map(
           (e) => e.exerciseId,
