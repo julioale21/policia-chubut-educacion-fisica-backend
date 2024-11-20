@@ -17,6 +17,12 @@ export class ExerciseCompletion {
   @Column({ type: 'date', nullable: true })
   completionDate: Date;
 
+  @Column()
+  dayOfRoutine: number;
+
+  @Column({ default: true })
+  isCompleted: boolean;
+
   @Column({ nullable: true })
   actualRepetitions: number;
 

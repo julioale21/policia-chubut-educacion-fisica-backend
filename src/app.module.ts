@@ -7,6 +7,7 @@ import { RoutineExcercisesModule } from './routine-excercises/routine-excercises
 import { ExcercisesModule } from './excercises/excercises.module';
 import { ExerciseCompletionsModule } from './exercise-completions/exercise-completions.module';
 import { AuthModule } from './auth/auth.module';
+import { ExerciseProgressModule } from './exercise-progress/exercise-progress.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AuthModule } from './auth/auth.module';
     ExcercisesModule,
     ExerciseCompletionsModule,
     AuthModule,
+    ExerciseProgressModule,
   ],
   controllers: [],
   providers: [],
