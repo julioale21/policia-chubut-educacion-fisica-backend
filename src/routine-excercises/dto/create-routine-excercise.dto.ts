@@ -20,6 +20,10 @@ export class CreateRoutineExerciseDto {
 
   @IsNumber()
   @IsPositive()
+  order: number;
+
+  @IsNumber()
+  @IsPositive()
   @IsOptional()
   duration?: number;
 

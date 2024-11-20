@@ -15,15 +15,27 @@ export class ExerciseExtrasDto {
   notes?: string;
 }
 
+// export class ToggleExerciseDto {
+//   @IsUUID()
+//   assignmentId: string;
+
+//   @IsUUID()
+//   exerciseId: string;
+
+//   @IsNumber()
+//   dayOfRoutine: number;
+
+//   @IsOptional()
+//   extras?: ExerciseExtrasDto;
+// }
+// src/exercise-progress/dto/toggle-exercise.dto.ts
+
 export class ToggleExerciseDto {
   @IsUUID()
   assignmentId: string;
 
   @IsUUID()
-  exerciseId: string;
-
-  @IsNumber()
-  dayOfRoutine: number;
+  routineExerciseId: string;
 
   @IsOptional()
   extras?: ExerciseExtrasDto;

@@ -25,14 +25,75 @@ export class RoutineExercisesService {
     private dataSource: DataSource,
   ) {}
 
+  // async create(
+  //   routineId: string,
+  //   createRoutineExerciseDto: CreateRoutineExerciseDto,
+  // ) {
+  //   const queryRunner = this.dataSource.createQueryRunner();
+
+  //   await queryRunner.connect();
+  //   await queryRunner.startTransaction();
+
+  //   try {
+  //     const routine = await this.routineRepository.findOne({
+  //       where: { id: routineId },
+  //     });
+  //     if (!routine) {
+  //       throw new NotFoundException(`Routine with ID "${routineId}" not found`);
+  //     }
+
+  //     const exercise = await this.exerciseRepository.findOne({
+  //       where: { id: createRoutineExerciseDto.exerciseId },
+  //     });
+  //     if (!exercise) {
+  //       throw new NotFoundException(
+  //         `Exercise with ID "${createRoutineExerciseDto.exerciseId}" not found`,
+  //       );
+  //     }
+
+  //     const existingRoutineExercise =
+  //       await this.routineExerciseRepository.findOne({
+  //         where: {
+  //           routine: { id: routineId },
+  //           exercise: { id: createRoutineExerciseDto.exerciseId },
+  //           dayOfRoutine: createRoutineExerciseDto.dayOfRoutine,
+  //         },
+  //       });
+
+  //     if (existingRoutineExercise) {
+  //       throw new ConflictException(
+  //         'This exercise is already assigned to this routine for this day',
+  //       );
+  //     }
+
+  //     const routineExercise = this.routineExerciseRepository.create({
+  //       ...createRoutineExerciseDto,
+  //       routine,
+  //       exercise,
+  //     });
+
+  //     const savedRoutineExercise =
+  //       await queryRunner.manager.save(routineExercise);
+
+  //     await queryRunner.commitTransaction();
+
+  //     return savedRoutineExercise;
+  //   } catch (err) {
+  //     await queryRunner.rollbackTransaction();
+  //     throw err;
+  //   } finally {
+  //     await queryRunner.release();
+  //   }
+  // }
   async create(
     routineId: string,
     createRoutineExerciseDto: CreateRoutineExerciseDto,
   ) {
     const queryRunner = this.dataSource.createQueryRunner();
-
     await queryRunner.connect();
     await queryRunner.startTransaction();
+
+    console.log({ createRoutineExerciseDto });
 
     try {
       const routine = await this.routineRepository.findOne({
@@ -51,18 +112,19 @@ export class RoutineExercisesService {
         );
       }
 
+      // Check for existing exercise with same routine, day and order
       const existingRoutineExercise =
         await this.routineExerciseRepository.findOne({
           where: {
             routine: { id: routineId },
-            exercise: { id: createRoutineExerciseDto.exerciseId },
             dayOfRoutine: createRoutineExerciseDto.dayOfRoutine,
+            order: createRoutineExerciseDto.order,
           },
         });
 
       if (existingRoutineExercise) {
         throw new ConflictException(
-          'This exercise is already assigned to this routine for this day',
+          'An exercise already exists with this order for this day in the routine',
         );
       }
 
@@ -72,11 +134,11 @@ export class RoutineExercisesService {
         exercise,
       });
 
+      console.log('routineExercise: ', routineExercise);
+
       const savedRoutineExercise =
         await queryRunner.manager.save(routineExercise);
-
       await queryRunner.commitTransaction();
-
       return savedRoutineExercise;
     } catch (err) {
       await queryRunner.rollbackTransaction();

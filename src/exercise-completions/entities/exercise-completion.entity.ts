@@ -6,8 +6,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Exercise } from 'src/excercises/entities/excercise.entity';
 import { RoutineAssignment } from 'src/routine-assignments/entities/routine-assignment.entity';
+import { RoutineExercise } from 'src/routine-excercises/entities/routine-excercise.entity';
 
 @Entity()
 export class ExerciseCompletion {
@@ -16,9 +16,6 @@ export class ExerciseCompletion {
 
   @Column({ type: 'date', nullable: true })
   completionDate: Date;
-
-  @Column()
-  dayOfRoutine: number;
 
   @Column({ default: true })
   isCompleted: boolean;
@@ -32,8 +29,8 @@ export class ExerciseCompletion {
   @Column({ nullable: true })
   notes: string;
 
-  @ManyToOne(() => Exercise)
-  exercise: Exercise;
+  @ManyToOne(() => RoutineExercise)
+  routineExercise: RoutineExercise;
 
   @ManyToOne(
     () => RoutineAssignment,

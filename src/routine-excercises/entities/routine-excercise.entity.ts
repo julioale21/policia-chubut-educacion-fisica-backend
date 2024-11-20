@@ -6,13 +6,18 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
+@Unique(['routine', 'dayOfRoutine', 'order'])
 export class RoutineExercise {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column()
+  order: number;
 
   @Column()
   dayOfRoutine: number;

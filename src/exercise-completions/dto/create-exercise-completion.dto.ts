@@ -27,7 +27,7 @@ export class CreateExerciseCompletionDto {
   @IsString()
   @IsUUID()
   @IsNotEmpty()
-  exerciseId: string;
+  routineExerciseId: string;
 
   @IsString()
   @IsUUID()

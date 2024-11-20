@@ -148,6 +148,7 @@ export class RoutinesService {
               repetitions: routineExercise.repetitions,
               sets: routineExercise.sets,
               restTimeBetweenSets: routineExercise.restTimeBetweenSets,
+              order: routineExercise.order,
             });
           },
         );
@@ -232,14 +233,12 @@ export class RoutinesService {
       .createQueryBuilder('routine')
       .leftJoinAndSelect('routine.trainer', 'trainer')
       .leftJoinAndSelect('routine.routineExercises', 'routineExercises')
-      .leftJoinAndSelect('routineExercises.exercise', 'exercise')
       .leftJoinAndSelect('routine.routineAssignments', 'routineAssignments')
       .leftJoinAndSelect('routineAssignments.student', 'student')
       .leftJoinAndSelect(
         'routineAssignments.exerciseCompletions',
         'exerciseCompletions',
       )
-      .leftJoinAndSelect('exerciseCompletions.exercise', 'completedExercise')
       .where('routine.id = :id', { id })
       .getOne();
 
