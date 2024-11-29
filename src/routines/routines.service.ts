@@ -228,11 +228,48 @@ export class RoutinesService {
     }));
   }
 
+  // async findOne(id: string) {
+  //   const routine = await this.routinesRepository
+  //     .createQueryBuilder('routine')
+  //     .leftJoinAndSelect('routine.trainer', 'trainer')
+  //     .leftJoinAndSelect('routine.routineExercises', 'routineExercises')
+  //     .leftJoinAndSelect('routine.routineAssignments', 'routineAssignments')
+  //     .leftJoinAndSelect('routineAssignments.student', 'student')
+  //     .leftJoinAndSelect(
+  //       'routineAssignments.exerciseCompletions',
+  //       'exerciseCompletions',
+  //     )
+  //     .where('routine.id = :id', { id })
+  //     .getOne();
+
+  //   if (!routine) {
+  //     throw new NotFoundException(`Routine with ID "${id}" not found`);
+  //   }
+
+  //   return {
+  //     ...routine,
+  //     trainer: {
+  //       id: routine.trainer.id,
+  //       name: routine.trainer.name,
+  //       email: routine.trainer.email,
+  //     },
+  //     routineAssignments: routine.routineAssignments.map((assignment) => ({
+  //       ...assignment,
+  //       student: {
+  //         id: assignment.student.id,
+  //         name: assignment.student.name,
+  //         email: assignment.student.email,
+  //       },
+  //     })),
+  //     studentCount: routine.routineAssignments.length,
+  //   };
+  // }
   async findOne(id: string) {
     const routine = await this.routinesRepository
       .createQueryBuilder('routine')
       .leftJoinAndSelect('routine.trainer', 'trainer')
       .leftJoinAndSelect('routine.routineExercises', 'routineExercises')
+      .leftJoinAndSelect('routineExercises.exercise', 'exercise') // Agregamos esta línea
       .leftJoinAndSelect('routine.routineAssignments', 'routineAssignments')
       .leftJoinAndSelect('routineAssignments.student', 'student')
       .leftJoinAndSelect(
@@ -259,6 +296,16 @@ export class RoutinesService {
           id: assignment.student.id,
           name: assignment.student.name,
           email: assignment.student.email,
+        },
+      })),
+      routineExercises: routine.routineExercises.map((exercise) => ({
+        ...exercise,
+        exercise: {
+          id: exercise.exercise.id,
+          name: exercise.exercise.name,
+          description: exercise.exercise.description,
+          imageUrl: exercise.exercise.imageUrl,
+          category: exercise.exercise.category,
         },
       })),
       studentCount: routine.routineAssignments.length,
