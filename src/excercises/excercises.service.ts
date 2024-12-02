@@ -1,4 +1,6 @@
 import {
+  HttpException,
+  HttpStatus,
   Injectable,
   Logger,
   UnprocessableEntityException,
@@ -7,7 +9,7 @@ import { CreateExcerciseDto } from './dto/create-excercise.dto';
 import { UpdateExcerciseDto } from './dto/update-excercise.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Exercise } from './entities/excercise.entity';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 
 @Injectable()
 export class ExcercisesService {
@@ -60,14 +62,31 @@ export class ExcercisesService {
   }
 
   async remove(id: string) {
-    const excercise = await this.excercisesRepository.findOne({
-      where: { id },
-    });
+    try {
+      const excercise = await this.excercisesRepository.findOne({
+        where: { id },
+      });
 
-    if (!excercise) {
-      throw new UnprocessableEntityException('Excercise not found');
+      if (!excercise) {
+        throw new UnprocessableEntityException('Excercise not found');
+      }
+
+      return await this.excercisesRepository.remove(excercise);
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        error.message.includes('foreign key constraint')
+      ) {
+        throw new HttpException(
+          {
+            status: HttpStatus.CONFLICT,
+            error: 'EXERCISE_IN_USE',
+            message: 'El ejercicio está siendo utilizado en una o más rutinas',
+          },
+          HttpStatus.CONFLICT,
+        );
+      }
+      throw error;
     }
-
-    return await this.excercisesRepository.remove(excercise);
   }
 }
