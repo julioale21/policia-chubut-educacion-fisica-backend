@@ -45,9 +45,8 @@ export class RoutinesController {
   update(
     @Param('id', ParseUuidPipe) id: string,
     @Body() updateRoutineDto: UpdateRoutineDto,
-    @GetUser() user: User,
   ) {
-    return this.routinesService.update(id, updateRoutineDto, user);
+    return this.routinesService.update(id, updateRoutineDto);
   }
 
   @Delete(':id')

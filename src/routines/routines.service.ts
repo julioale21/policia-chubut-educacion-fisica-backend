@@ -312,63 +312,98 @@ export class RoutinesService {
     };
   }
 
-  async update(id: string, updateRoutineDto: UpdateRoutineDto, user: User) {
+  async update(id: string, updateRoutineDto: UpdateRoutineDto) {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const routine = await this.routinesRepository.findOne({
+      const routine = await queryRunner.manager.findOne(Routine, {
         where: { id },
-        relations: ['trainer', 'routineExercises'],
+        relations: ['trainer', 'routineExercises', 'routineExercises.exercise'],
       });
 
       if (!routine) {
         throw new NotFoundException('Routine not found');
       }
 
-      if (
-        routine.trainer.id !== user.id &&
-        !user.roles.includes(ValidRoles.admin)
-      ) {
-        throw new BadRequestException(
-          'You are not authorized to update this routine',
+      await queryRunner.manager.update(
+        Routine,
+        { id },
+        {
+          name: updateRoutineDto.name,
+          description: updateRoutineDto.description,
+          durationInDays: updateRoutineDto.durationInDays,
+          isActive: updateRoutineDto.isActive,
+        },
+      );
+
+      if (updateRoutineDto.routineExercises?.length > 0) {
+        const existingExercises = routine.routineExercises;
+        const updatedExerciseKeys = updateRoutineDto.routineExercises.map(
+          (e) => `${e.exerciseId}-${e.dayOfRoutine}-${e.order}`,
         );
-      }
 
-      Object.assign(routine, updateRoutineDto);
+        const exercisesToRemove = existingExercises.filter((ee) => {
+          const key = `${ee.exercise.id}-${ee.dayOfRoutine}-${ee.order}`;
+          return !updatedExerciseKeys.includes(key);
+        });
 
-      if (updateRoutineDto.routineExercises) {
-        // Remove existing routine exercises
-        await queryRunner.manager.remove(routine.routineExercises);
+        if (exercisesToRemove.length > 0) {
+          // Primero eliminar las referencias en exercise_completion
+          await queryRunner.manager.delete('exercise_completion', {
+            routineExercise: { id: In(exercisesToRemove.map((e) => e.id)) },
+          });
 
-        // Create new routine exercises without any restrictions
-        const newRoutineExercises = await Promise.all(
-          updateRoutineDto.routineExercises.map(async (exerciseDto) => {
-            const exercise = await this.exerciseRepository.findOne({
-              where: { id: exerciseDto.exerciseId },
-            });
-            if (!exercise) {
-              throw new NotFoundException(
-                `Exercise with ID ${exerciseDto.exerciseId} not found`,
-              );
-            }
-            return this.routineExerciseRepository.create({
-              routine: { id: routine.id },
-              exercise: { id: exercise.id },
+          // Luego eliminar los routine_exercise
+          await queryRunner.manager.delete(
+            'routine_exercise',
+            exercisesToRemove.map((e) => e.id),
+          );
+        }
+
+        for (const exerciseDto of updateRoutineDto.routineExercises) {
+          const existingExercise = existingExercises.find(
+            (ee) =>
+              ee.exercise.id === exerciseDto.exerciseId &&
+              ee.dayOfRoutine === exerciseDto.dayOfRoutine &&
+              ee.order === exerciseDto.order,
+          );
+
+          if (existingExercise) {
+            await queryRunner.manager.update(
+              'routine_exercise',
+              { id: existingExercise.id },
+              {
+                duration: exerciseDto.duration,
+                repetitions: exerciseDto.repetitions,
+                sets: exerciseDto.sets,
+                restTimeBetweenSets: exerciseDto.restTimeBetweenSets,
+              },
+            );
+          } else {
+            await queryRunner.manager.insert('routine_exercise', {
+              routine: { id },
+              exercise: { id: exerciseDto.exerciseId },
+              order: exerciseDto.order,
               dayOfRoutine: exerciseDto.dayOfRoutine,
               duration: exerciseDto.duration,
               repetitions: exerciseDto.repetitions,
+              sets: exerciseDto.sets,
               restTimeBetweenSets: exerciseDto.restTimeBetweenSets,
             });
-          }),
-        );
-
-        await queryRunner.manager.save(newRoutineExercises);
+          }
+        }
+      } else {
+        // Si no hay ejercicios, eliminar todas las referencias
+        await queryRunner.manager.delete('exercise_completion', {
+          routineExercise: { routine: { id } },
+        });
+        await queryRunner.manager.delete('routine_exercise', {
+          routine: { id },
+        });
       }
-
-      await queryRunner.manager.save(routine);
 
       await queryRunner.commitTransaction();
 
