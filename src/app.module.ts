@@ -22,6 +22,13 @@ import { ExerciseProgressModule } from './exercise-progress/exercise-progress.mo
       autoLoadEntities: true,
       // entities: [],
       synchronize: true,
+      ssl: process.env.POSTGRES_SSL === 'true',
+      extra: {
+        ssl:
+          process.env.POSTGRES_SSL === 'true'
+            ? { rejectUnauthorized: false }
+            : null,
+      },
     }),
     RoutinesModule,
     RoutineAssignmentsModule,
