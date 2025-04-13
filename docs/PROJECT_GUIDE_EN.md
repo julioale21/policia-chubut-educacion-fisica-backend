@@ -1,9 +1,3 @@
-# Fitness Routine Management System
-
-<p align="center">
-  <a href="" target="blank"><img src="https://cicech.org/wp-content/uploads/2023/12/231207Policia.jpg" width="200" alt="" /></a>
-</p>
-
 # Police Physical Education Backend
 
 ## Project Overview
