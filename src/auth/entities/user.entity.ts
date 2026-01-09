@@ -108,6 +108,12 @@ export class User {
   force?: string;
 
   @Column({
+    type: 'text',
+    nullable: true,
+  })
+  rank?: string;
+
+  @Column({
     nullable: true,
     type: 'jsonb',
   })
