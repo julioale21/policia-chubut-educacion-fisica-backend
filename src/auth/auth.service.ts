@@ -200,24 +200,24 @@ export class AuthService {
   async login(loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
 
-    const user = await this.userRepository.findOne({
+    // First find user with password for validation
+    const userWithPassword = await this.userRepository.findOne({
       where: { email },
-      select: {
-        email: true,
-        id: true,
-        name: true,
-        password: true,
-        roles: true,
-      },
+      select: { id: true, password: true },
     });
 
-    if (!user) {
+    if (!userWithPassword) {
       throw new UnauthorizedException('User not found');
     }
 
-    if (!bcrypt.compareSync(password, user.password)) {
+    if (!bcrypt.compareSync(password, userWithPassword.password)) {
       throw new UnauthorizedException('Invalid password');
     }
+
+    // Get full user data without password
+    const user = await this.userRepository.findOne({
+      where: { id: userWithPassword.id },
+    });
 
     delete user.password;
 
