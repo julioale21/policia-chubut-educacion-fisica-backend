@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -27,4 +28,18 @@ export class CreateExcerciseDto {
   @IsNotEmpty()
   @IsEnum(ExerciseCategory)
   category: ExerciseCategory;
+
+  @IsString()
+  @IsOptional()
+  difficulty?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  muscleGroups?: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  instructions?: string[];
 }

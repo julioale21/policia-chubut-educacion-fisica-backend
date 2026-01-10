@@ -141,30 +141,84 @@ export class SeedService {
         description:
           'Ejercicio fundamental para fortalecer pectorales, hombros y tríceps. Mantén el cuerpo recto y baja hasta que el pecho casi toque el suelo.',
         category: ExerciseCategory.FUERZA,
+        difficulty: 'Principiante',
+        muscleGroups: ['Pecho', 'Tríceps', 'Hombros', 'Core'],
+        instructions: [
+          'Colócate boca abajo con las manos separadas al ancho de los hombros',
+          'Mantén el cuerpo recto desde la cabeza hasta los talones',
+          'Baja el cuerpo flexionando los codos hasta que el pecho casi toque el suelo',
+          'Mantén los codos en un ángulo de 45 grados respecto al cuerpo',
+          'Empuja hacia arriba extendiendo los brazos completamente',
+          'Exhala al subir e inhala al bajar',
+        ],
       },
       {
         name: 'Sentadillas',
         description:
           'Ejercicio compuesto para piernas y glúteos. Baja manteniendo la espalda recta hasta que los muslos queden paralelos al suelo.',
         category: ExerciseCategory.FUERZA,
+        difficulty: 'Principiante',
+        muscleGroups: ['Cuádriceps', 'Glúteos', 'Isquiotibiales', 'Core'],
+        instructions: [
+          'Párate con los pies separados al ancho de los hombros',
+          'Mantén los pies ligeramente apuntando hacia afuera',
+          'Baja las caderas hacia atrás y abajo como si fueras a sentarte',
+          'Mantén la espalda recta y el pecho elevado',
+          'Baja hasta que los muslos queden paralelos al suelo',
+          'Empuja a través de los talones para volver a la posición inicial',
+          'Mantén las rodillas alineadas con los dedos de los pies',
+        ],
       },
       {
         name: 'Plancha Abdominal',
         description:
           'Ejercicio isométrico para fortalecer el core. Mantén el cuerpo en línea recta apoyado en antebrazos y puntas de los pies.',
         category: ExerciseCategory.FUERZA,
+        difficulty: 'Principiante',
+        muscleGroups: ['Core', 'Hombros', 'Espalda'],
+        instructions: [
+          'Colócate boca abajo apoyándote en los antebrazos y las puntas de los pies',
+          'Mantén los codos directamente debajo de los hombros',
+          'Forma una línea recta desde la cabeza hasta los talones',
+          'Contrae el abdomen y los glúteos',
+          'Mantén la posición sin dejar caer las caderas',
+          'Respira de manera constante durante el ejercicio',
+          'Evita arquear la espalda o levantar los glúteos',
+        ],
       },
       {
         name: 'Dominadas',
         description:
           'Ejercicio para espalda y bíceps. Cuelga de una barra y sube hasta que la barbilla supere la barra.',
         category: ExerciseCategory.FUERZA,
+        difficulty: 'Avanzado',
+        muscleGroups: ['Espalda', 'Bíceps', 'Antebrazos', 'Core'],
+        instructions: [
+          'Agarra la barra con las palmas mirando hacia adelante, manos al ancho de los hombros',
+          'Cuelga con los brazos completamente extendidos',
+          'Contrae los omóplatos hacia atrás y abajo',
+          'Tira de tu cuerpo hacia arriba llevando el pecho hacia la barra',
+          'Sube hasta que la barbilla supere la barra',
+          'Baja de manera controlada hasta la posición inicial',
+          'Evita balancearte o usar impulso',
+        ],
       },
       {
         name: 'Fondos en Paralelas',
         description:
           'Ejercicio para tríceps y pecho. Baja controladamente flexionando los codos y sube extendiendo los brazos.',
         category: ExerciseCategory.FUERZA,
+        difficulty: 'Intermedio',
+        muscleGroups: ['Tríceps', 'Pecho', 'Hombros'],
+        instructions: [
+          'Sujeta las barras paralelas con los brazos extendidos',
+          'Mantén el cuerpo recto con ligera inclinación hacia adelante',
+          'Baja el cuerpo flexionando los codos hasta formar un ángulo de 90 grados',
+          'Mantén los codos cerca del cuerpo',
+          'Empuja hacia arriba extendiendo los brazos completamente',
+          'Controla el movimiento tanto al bajar como al subir',
+          'Evita encoger los hombros',
+        ],
       },
       // Cardio
       {
@@ -172,24 +226,67 @@ export class SeedService {
         description:
           'Ejercicio de alta intensidad que combina sentadilla, plancha, flexión y salto. Excelente para quemar calorías.',
         category: ExerciseCategory.CARDIO,
+        difficulty: 'Intermedio',
+        muscleGroups: ['Cuerpo completo', 'Core', 'Piernas', 'Pecho'],
+        instructions: [
+          'Comienza de pie con los pies al ancho de los hombros',
+          'Baja a posición de sentadilla y coloca las manos en el suelo',
+          'Salta con los pies hacia atrás para quedar en posición de plancha',
+          'Realiza una flexión de pecho (opcional)',
+          'Salta con los pies hacia las manos volviendo a sentadilla',
+          'Salta explosivamente hacia arriba con los brazos extendidos',
+          'Aterriza suavemente y repite el movimiento',
+        ],
       },
       {
         name: 'Jumping Jacks',
         description:
           'Ejercicio cardiovascular que involucra saltos con apertura de brazos y piernas.',
         category: ExerciseCategory.CARDIO,
+        difficulty: 'Principiante',
+        muscleGroups: ['Piernas', 'Hombros', 'Core'],
+        instructions: [
+          'Comienza de pie con los pies juntos y brazos a los lados',
+          'Salta separando las piernas más allá del ancho de los hombros',
+          'Simultáneamente levanta los brazos por encima de la cabeza',
+          'Salta de nuevo juntando los pies y bajando los brazos',
+          'Mantén un ritmo constante durante todo el ejercicio',
+          'Aterriza suavemente con las rodillas ligeramente flexionadas',
+        ],
       },
       {
         name: 'Mountain Climbers',
         description:
           'Ejercicio de alta intensidad en posición de plancha llevando las rodillas al pecho alternadamente.',
         category: ExerciseCategory.CARDIO,
+        difficulty: 'Intermedio',
+        muscleGroups: ['Core', 'Hombros', 'Piernas', 'Cadera'],
+        instructions: [
+          'Comienza en posición de plancha alta con brazos extendidos',
+          'Mantén las manos directamente debajo de los hombros',
+          'Lleva la rodilla derecha hacia el pecho',
+          'Vuelve la pierna derecha a la posición inicial',
+          'Inmediatamente lleva la rodilla izquierda hacia el pecho',
+          'Alterna las piernas a un ritmo rápido',
+          'Mantén las caderas bajas y el core contraído',
+        ],
       },
       {
         name: 'Carrera en el Lugar',
         description:
           'Ejercicio cardiovascular simple de correr sin desplazamiento, ideal para calentamiento.',
         category: ExerciseCategory.CARDIO,
+        difficulty: 'Principiante',
+        muscleGroups: ['Piernas', 'Core', 'Cardiovascular'],
+        instructions: [
+          'Párate con los pies al ancho de las caderas',
+          'Comienza a correr levantando las rodillas alternadamente',
+          'Balancea los brazos de forma natural como al correr',
+          'Mantén el torso erguido y el core activado',
+          'Aterriza suavemente en la parte media del pie',
+          'Aumenta gradualmente la velocidad según tu nivel',
+          'Respira de forma rítmica durante el ejercicio',
+        ],
       },
       // Resistencia
       {
@@ -197,12 +294,34 @@ export class SeedService {
         description:
           'Serie de ejercicios realizados con poco descanso para mejorar la resistencia muscular.',
         category: ExerciseCategory.RESISTENCIA,
+        difficulty: 'Intermedio',
+        muscleGroups: ['Cuerpo completo'],
+        instructions: [
+          'Selecciona 4-6 ejercicios que trabajen diferentes grupos musculares',
+          'Realiza cada ejercicio durante 30-45 segundos',
+          'Descansa solo 15-20 segundos entre ejercicios',
+          'Completa el circuito completo sin pausas largas',
+          'Descansa 1-2 minutos al finalizar el circuito',
+          'Repite el circuito 2-4 veces según tu nivel',
+          'Mantén una intensidad moderada-alta durante todo el circuito',
+        ],
       },
       {
         name: 'Sentadillas con Salto',
         description:
           'Variante explosiva de la sentadilla que mejora potencia y resistencia.',
         category: ExerciseCategory.RESISTENCIA,
+        difficulty: 'Intermedio',
+        muscleGroups: ['Cuádriceps', 'Glúteos', 'Pantorrillas', 'Core'],
+        instructions: [
+          'Comienza de pie con los pies al ancho de los hombros',
+          'Baja a una sentadilla profunda manteniendo la espalda recta',
+          'Explota hacia arriba saltando lo más alto posible',
+          'Extiende completamente las caderas y rodillas en el aire',
+          'Balancea los brazos para ganar impulso',
+          'Aterriza suavemente volviendo directamente a la sentadilla',
+          'Mantén las rodillas alineadas con los dedos de los pies',
+        ],
       },
       // Flexibilidad
       {
@@ -210,18 +329,51 @@ export class SeedService {
         description:
           'Estiramiento para la parte posterior de las piernas. Mantén la posición 30 segundos.',
         category: ExerciseCategory.FLEXIBILIDAD,
+        difficulty: 'Principiante',
+        muscleGroups: ['Isquiotibiales', 'Espalda baja'],
+        instructions: [
+          'Siéntate en el suelo con las piernas extendidas',
+          'Mantén la espalda recta y los pies flexionados',
+          'Inclínate hacia adelante desde las caderas',
+          'Intenta alcanzar los dedos de los pies con las manos',
+          'Mantén las rodillas ligeramente flexionadas si es necesario',
+          'Sostén la posición durante 30-60 segundos',
+          'Respira profundamente y relaja los músculos',
+        ],
       },
       {
         name: 'Estiramiento de Cuádriceps',
         description:
           'Estiramiento para la parte frontal de las piernas. Lleva el talón hacia el glúteo.',
         category: ExerciseCategory.FLEXIBILIDAD,
+        difficulty: 'Principiante',
+        muscleGroups: ['Cuádriceps', 'Cadera'],
+        instructions: [
+          'Párate sobre una pierna (puedes apoyarte en una pared)',
+          'Flexiona la otra rodilla llevando el talón hacia el glúteo',
+          'Sujeta el tobillo con la mano del mismo lado',
+          'Mantén las rodillas juntas y alineadas',
+          'Empuja suavemente la cadera hacia adelante',
+          'Sostén la posición durante 30 segundos',
+          'Cambia de pierna y repite',
+        ],
       },
       {
         name: 'Estiramiento de Espalda',
         description:
           'Estiramiento para aliviar tensión en la espalda. Realiza movimientos de gato-vaca.',
         category: ExerciseCategory.FLEXIBILIDAD,
+        difficulty: 'Principiante',
+        muscleGroups: ['Espalda', 'Core', 'Cuello'],
+        instructions: [
+          'Colócate en posición de cuadrupedia (manos y rodillas)',
+          'Mantén las manos bajo los hombros y rodillas bajo las caderas',
+          'Posición de gato: arquea la espalda hacia arriba y mete la barbilla',
+          'Mantén la posición de gato 5-10 segundos',
+          'Posición de vaca: hunde la espalda y levanta la cabeza',
+          'Mantén la posición de vaca 5-10 segundos',
+          'Alterna entre ambas posiciones de forma fluida',
+        ],
       },
     ];
 

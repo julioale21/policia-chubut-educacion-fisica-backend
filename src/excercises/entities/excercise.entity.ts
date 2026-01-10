@@ -30,6 +30,15 @@ export class Exercise {
   })
   category: ExerciseCategory;
 
+  @Column({ nullable: true })
+  difficulty?: string; // Principiante, Intermedio, Avanzado
+
+  @Column('simple-array', { nullable: true })
+  muscleGroups?: string[]; // ['Pecho', 'Tríceps', 'Hombros']
+
+  @Column('simple-array', { nullable: true })
+  instructions?: string[]; // Pasos del ejercicio
+
   @OneToMany(
     () => RoutineExercise,
     (routineExercise) => routineExercise.exercise,
