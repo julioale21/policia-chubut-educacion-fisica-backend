@@ -8,6 +8,7 @@ import { ExcercisesModule } from './excercises/excercises.module';
 import { ExerciseCompletionsModule } from './exercise-completions/exercise-completions.module';
 import { AuthModule } from './auth/auth.module';
 import { ExerciseProgressModule } from './exercise-progress/exercise-progress.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ExerciseProgressModule } from './exercise-progress/exercise-progress.mo
     ExerciseCompletionsModule,
     AuthModule,
     ExerciseProgressModule,
+    SeedModule,
   ],
   controllers: [],
   providers: [],
