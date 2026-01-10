@@ -101,6 +101,37 @@ yarn build
 yarn start:prod
 ```
 
+## Test Data Seed
+
+To populate the database with test data, run:
+
+```bash
+POST http://localhost:3000/api/v1/seed
+```
+
+### Created Users
+
+| Role | Email | Password |
+|------|-------|----------|
+| Trainer | `trainer@policia.gov.ar` | `trainer123` |
+| Student 1 | `estudiante1@policia.gov.ar` | `student123` |
+| Student 2 | `estudiante2@policia.gov.ar` | `student123` |
+| Student 3 | `estudiante3@policia.gov.ar` | `student123` |
+
+### Generated Data
+
+- **14 exercises** with detailed instructions, muscle groups, and difficulty levels
+- **2 routines** with multiple days and assigned exercises
+- **Assignments** of routines to students
+- **Completions** examples (student1 has partial progress)
+
+### Exercise Categories
+
+- FUERZA (Strength): Push-ups, Squats, Plank, Pull-ups, Dips
+- CARDIO: Burpees, Jumping Jacks, Mountain Climbers, Running in Place
+- RESISTENCIA (Endurance): Resistance Circuit, Jump Squats
+- FLEXIBILIDAD (Flexibility): Hamstring, Quadriceps, Back Stretches
+
 ## API Documentation
 
 ### Authentication Endpoints
@@ -124,12 +155,18 @@ yarn start:prod
 - GET `/routines/:id` - Get routine details
 - PATCH `/routines/:id` - Update routine
 - DELETE `/routines/:id` - Delete routine
+- GET `/routines/user/assignments` - Get my assigned routines with progress
+- GET `/routines/:routineId/assignments/:assignmentId` - Get routine detail with days and exercises
 
 ### Progress Tracking Endpoints
 
 - GET `/exercise-progress` - Get progress history
 - POST `/exercise-completions` - Record exercise completion
 - GET `/exercise-completions/:id` - Get completion details
+
+### Seed Endpoint
+
+- POST `/seed` - Populate database with test data
 
 ## Development Guidelines
 

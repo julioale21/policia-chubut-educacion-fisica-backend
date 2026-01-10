@@ -27,18 +27,18 @@ export class RoutinesController {
     return this.routinesService.create(createRoutineDto, user);
   }
 
+  // Important: This route must come before :id routes
+  @Get('user/assignments')
+  @Auth()
+  getMyAssignments(@GetUser() user: User) {
+    return this.routinesService.getMyAssignments(user.id);
+  }
+
   @Get()
   @Auth()
   findAll(@Req() req) {
     const user = req.user as User;
     return this.routinesService.findAll(user);
-  }
-
-  // Important: This route must come before :id routes
-  @Get('my-assignments')
-  @Auth()
-  getMyAssignments(@GetUser() user: User) {
-    return this.routinesService.getMyAssignments(user.id);
   }
 
   @Get(':id')
