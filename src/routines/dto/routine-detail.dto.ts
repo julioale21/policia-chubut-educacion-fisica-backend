@@ -15,6 +15,9 @@ export class ExerciseInfoDto {
   description: string;
   imageUrl?: string | null;
   category: string;
+  difficulty?: string;
+  muscleGroups?: string[];
+  instructions?: string[];
 }
 
 export class RoutineDayExerciseDto {

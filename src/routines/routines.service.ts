@@ -670,6 +670,9 @@ export class RoutinesService {
           description: re.exercise.description,
           imageUrl: re.exercise.imageUrl,
           category: re.exercise.category,
+          difficulty: re.exercise.difficulty,
+          muscleGroups: re.exercise.muscleGroups,
+          instructions: re.exercise.instructions,
         },
         completion: completion
           ? {
