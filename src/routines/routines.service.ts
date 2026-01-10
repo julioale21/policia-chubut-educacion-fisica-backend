@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
@@ -14,7 +15,13 @@ import { ValidRoles } from 'src/auth/interfaces';
 
 import { ExerciseCompletion } from 'src/exercise-completions/entities/exercise-completion.entity';
 import { RoutineExercise } from 'src/routine-excercises/entities/routine-excercise.entity';
+import { RoutineAssignment } from 'src/routine-assignments/entities/routine-assignment.entity';
 import { Exercise } from 'src/excercises/entities/excercise.entity';
+import {
+  RoutineProgressDto,
+  RoutineWithProgressDto,
+} from './dto/routine-with-progress.dto';
+import { RoutineDetailDto, RoutineDayDto } from './dto/routine-detail.dto';
 
 @Injectable()
 export class RoutinesService {
@@ -25,6 +32,10 @@ export class RoutinesService {
     private routinesRepository: Repository<Routine>,
     @InjectRepository(RoutineExercise)
     private routineExerciseRepository: Repository<RoutineExercise>,
+    @InjectRepository(RoutineAssignment)
+    private routineAssignmentRepository: Repository<RoutineAssignment>,
+    @InjectRepository(ExerciseCompletion)
+    private exerciseCompletionRepository: Repository<ExerciseCompletion>,
     @InjectRepository(Exercise)
     private exerciseRepository: Repository<Exercise>,
     private dataSource: DataSource,
@@ -481,6 +492,220 @@ export class RoutinesService {
       students: routine.routineAssignments.map(
         (assignment) => assignment.student,
       ),
+    };
+  }
+
+  /**
+   * Calculate progress for a routine assignment
+   * A day is complete if ALL its exercises have ExerciseCompletion with isCompleted=true
+   */
+  private async calculateProgress(
+    routineId: string,
+    assignmentId: string,
+  ): Promise<RoutineProgressDto> {
+    // Get all routine exercises grouped by day
+    const routineExercises = await this.routineExerciseRepository.find({
+      where: { routine: { id: routineId } },
+      select: ['id', 'dayOfRoutine'],
+    });
+
+    // Get unique days
+    const daysMap = new Map<number, string[]>();
+    routineExercises.forEach((re) => {
+      const day = re.dayOfRoutine;
+      if (!daysMap.has(day)) {
+        daysMap.set(day, []);
+      }
+      daysMap.get(day).push(re.id);
+    });
+
+    const totalDays = daysMap.size;
+
+    // Get all completions for this assignment
+    const completions = await this.exerciseCompletionRepository.find({
+      where: {
+        routineAssignment: { id: assignmentId },
+        isCompleted: true,
+      },
+      relations: ['routineExercise'],
+    });
+
+    const completedExerciseIds = new Set(
+      completions.map((c) => c.routineExercise.id),
+    );
+
+    // Count completed days (all exercises in the day must be completed)
+    let completedDays = 0;
+    daysMap.forEach((exerciseIds) => {
+      const allCompleted = exerciseIds.every((id) =>
+        completedExerciseIds.has(id),
+      );
+      if (allCompleted) {
+        completedDays++;
+      }
+    });
+
+    const percentage =
+      totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0;
+
+    return {
+      completedDays,
+      totalDays,
+      percentage,
+    };
+  }
+
+  /**
+   * Get all routines assigned to the current user with progress
+   */
+  async getMyAssignments(userId: string): Promise<RoutineWithProgressDto[]> {
+    const assignments = await this.routineAssignmentRepository.find({
+      where: { student: { id: userId } },
+      relations: ['routine', 'routine.trainer'],
+    });
+
+    const result: RoutineWithProgressDto[] = [];
+
+    for (const assignment of assignments) {
+      const routine = assignment.routine;
+      const progress = await this.calculateProgress(routine.id, assignment.id);
+
+      result.push({
+        id: routine.id,
+        name: routine.name,
+        description: routine.description,
+        durationInDays: routine.durationInDays,
+        isActive: routine.isActive,
+        trainerName: routine.trainer?.name || 'Sin asignar',
+        assignment: {
+          id: assignment.id,
+          startDate: assignment.startDate,
+          endDate: assignment.endDate,
+        },
+        progress,
+      });
+    }
+
+    return result;
+  }
+
+  /**
+   * Get detailed routine with days, exercises and completion status
+   */
+  async getRoutineDetail(
+    routineId: string,
+    assignmentId: string,
+    userId: string,
+  ): Promise<RoutineDetailDto> {
+    // Verify assignment belongs to user
+    const assignment = await this.routineAssignmentRepository.findOne({
+      where: { id: assignmentId },
+      relations: ['student', 'routine', 'routine.trainer'],
+    });
+
+    if (!assignment) {
+      throw new NotFoundException('Assignment not found');
+    }
+
+    if (assignment.student.id !== userId) {
+      throw new ForbiddenException('You do not have access to this assignment');
+    }
+
+    if (assignment.routine.id !== routineId) {
+      throw new BadRequestException(
+        'Assignment does not belong to this routine',
+      );
+    }
+
+    const routine = assignment.routine;
+
+    // Get all routine exercises with their exercise data
+    const routineExercises = await this.routineExerciseRepository.find({
+      where: { routine: { id: routineId } },
+      relations: ['exercise'],
+      order: { dayOfRoutine: 'ASC', order: 'ASC' },
+    });
+
+    // Get all completions for this assignment
+    const completions = await this.exerciseCompletionRepository.find({
+      where: { routineAssignment: { id: assignmentId } },
+      relations: ['routineExercise'],
+    });
+
+    const completionMap = new Map(
+      completions.map((c) => [c.routineExercise.id, c]),
+    );
+
+    // Group exercises by day
+    const daysMap = new Map<number, RoutineDayDto>();
+    const startDate = new Date(assignment.startDate);
+
+    routineExercises.forEach((re) => {
+      const dayNumber = re.dayOfRoutine;
+
+      if (!daysMap.has(dayNumber)) {
+        // Calculate date for this day
+        const dayDate = new Date(startDate);
+        dayDate.setDate(dayDate.getDate() + dayNumber - 1);
+
+        daysMap.set(dayNumber, {
+          dayNumber,
+          date: dayDate,
+          exercises: [],
+        });
+      }
+
+      const completion = completionMap.get(re.id);
+
+      daysMap.get(dayNumber).exercises.push({
+        id: re.id,
+        order: re.order,
+        sets: re.sets,
+        repetitions: re.repetitions,
+        duration: re.duration,
+        restTimeBetweenSets: re.restTimeBetweenSets,
+        exercise: {
+          id: re.exercise.id,
+          name: re.exercise.name,
+          description: re.exercise.description,
+          imageUrl: re.exercise.imageUrl,
+          category: re.exercise.category,
+        },
+        completion: completion
+          ? {
+              id: completion.id,
+              isCompleted: completion.isCompleted,
+              completionDate: completion.completionDate,
+              actualRepetitions: completion.actualRepetitions,
+              actualDuration: completion.actualDuration,
+              notes: completion.notes,
+            }
+          : undefined,
+      });
+    });
+
+    // Calculate progress
+    const progress = await this.calculateProgress(routineId, assignmentId);
+
+    // Sort days and convert to array
+    const days = Array.from(daysMap.values()).sort(
+      (a, b) => a.dayNumber - b.dayNumber,
+    );
+
+    return {
+      id: routine.id,
+      name: routine.name,
+      description: routine.description,
+      durationInDays: routine.durationInDays,
+      isActive: routine.isActive,
+      trainerName: routine.trainer?.name || 'Sin asignar',
+      assignment: {
+        id: assignment.id,
+        startDate: assignment.startDate,
+        endDate: assignment.endDate,
+      },
+      progress,
+      days,
     };
   }
 }

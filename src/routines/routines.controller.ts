@@ -34,10 +34,31 @@ export class RoutinesController {
     return this.routinesService.findAll(user);
   }
 
+  // Important: This route must come before :id routes
+  @Get('my-assignments')
+  @Auth()
+  getMyAssignments(@GetUser() user: User) {
+    return this.routinesService.getMyAssignments(user.id);
+  }
+
   @Get(':id')
   @Auth()
   findOne(@Param('id', ParseUuidPipe) id: string) {
     return this.routinesService.findOne(id);
+  }
+
+  @Get(':routineId/assignments/:assignmentId')
+  @Auth()
+  getRoutineDetail(
+    @Param('routineId', ParseUuidPipe) routineId: string,
+    @Param('assignmentId', ParseUuidPipe) assignmentId: string,
+    @GetUser() user: User,
+  ) {
+    return this.routinesService.getRoutineDetail(
+      routineId,
+      assignmentId,
+      user.id,
+    );
   }
 
   @Patch(':id')
