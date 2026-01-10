@@ -5,14 +5,15 @@ import {
 } from 'class-validator';
 
 export function IsDateFormat(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isDateFormat',
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
       validator: {
-        validate(value: any, args: ValidationArguments) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        validate(value: any, _args: ValidationArguments) {
           if (typeof value !== 'string') return false;
 
           const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;

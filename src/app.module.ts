@@ -9,6 +9,7 @@ import { ExerciseCompletionsModule } from './exercise-completions/exercise-compl
 import { AuthModule } from './auth/auth.module';
 import { ExerciseProgressModule } from './exercise-progress/exercise-progress.module';
 import { SeedModule } from './seed/seed.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { SeedModule } from './seed/seed.module';
     AuthModule,
     ExerciseProgressModule,
     SeedModule,
+    StatisticsModule,
   ],
   controllers: [],
   providers: [],

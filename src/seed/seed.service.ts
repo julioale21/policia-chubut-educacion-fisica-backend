@@ -421,7 +421,11 @@ export class SeedService {
           {
             day: 3,
             exercises: [
-              { name: 'Estiramiento de Isquiotibiales', duration: 60, rest: 15 },
+              {
+                name: 'Estiramiento de Isquiotibiales',
+                duration: 60,
+                rest: 15,
+              },
               { name: 'Estiramiento de Cuádriceps', duration: 60, rest: 15 },
               { name: 'Estiramiento de Espalda', duration: 60, rest: 15 },
             ],
@@ -452,7 +456,11 @@ export class SeedService {
           {
             day: 7,
             exercises: [
-              { name: 'Estiramiento de Isquiotibiales', duration: 90, rest: 15 },
+              {
+                name: 'Estiramiento de Isquiotibiales',
+                duration: 90,
+                rest: 15,
+              },
               { name: 'Estiramiento de Cuádriceps', duration: 90, rest: 15 },
               { name: 'Estiramiento de Espalda', duration: 90, rest: 15 },
             ],
@@ -492,7 +500,11 @@ export class SeedService {
           {
             day: 4,
             exercises: [
-              { name: 'Estiramiento de Isquiotibiales', duration: 60, rest: 15 },
+              {
+                name: 'Estiramiento de Isquiotibiales',
+                duration: 60,
+                rest: 15,
+              },
               { name: 'Estiramiento de Cuádriceps', duration: 60, rest: 15 },
               { name: 'Estiramiento de Espalda', duration: 60, rest: 15 },
             ],
@@ -645,8 +657,7 @@ export class SeedService {
             routineAssignment: { id: assignment.id },
             routineExercise: { id: re.id },
             isCompleted: re.dayOfRoutine === 1, // Day 1 fully completed, day 2 partial
-            completionDate:
-              re.dayOfRoutine === 1 ? new Date() : null,
+            completionDate: re.dayOfRoutine === 1 ? new Date() : null,
             actualRepetitions: re.repetitions,
             actualDuration: re.duration,
           });
