@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { ExerciseProgressModule } from './exercise-progress/exercise-progress.module';
 import { SeedModule } from './seed/seed.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { StatisticsModule } from './statistics/statistics.module';
     ExerciseProgressModule,
     SeedModule,
     StatisticsModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [],
