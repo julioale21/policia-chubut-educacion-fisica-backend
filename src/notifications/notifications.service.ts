@@ -112,51 +112,64 @@ export class NotificationsService {
       };
     }
 
-    // Send push notifications
-    const tokenStrings = tokens.map((t) => t.token);
-    const dataAsStrings = dto.data
-      ? Object.fromEntries(
-          Object.entries(dto.data).map(([k, v]) => [k, String(v)]),
-        )
-      : undefined;
-
-    const response = await this.firebaseAdmin.sendToMultipleDevices(
-      tokenStrings,
-      {
-        title: dto.title,
-        body: dto.body,
-        imageUrl: dto.imageUrl,
-        data: dataAsStrings,
-      },
-    );
-
+    // Send push notifications - need to send per user to include correct notificationId
     let sentCount = 0;
     let failedCount = 0;
 
-    if (response) {
-      sentCount = response.successCount;
-      failedCount = response.failureCount;
+    for (const notification of savedNotifications) {
+      const userTokens = tokens
+        .filter((t) => t.userId === notification.userId)
+        .map((t) => t.token);
 
-      // Mark invalid tokens as inactive
-      const invalidTokens = this.firebaseAdmin.getFailedTokensFromBatchResponse(
-        tokenStrings,
-        response,
+      if (userTokens.length === 0) continue;
+
+      // Include notificationId in the data for navigation
+      const dataWithId: Record<string, string> = {
+        notificationId: notification.id,
+        type: notification.type,
+        ...(dto.data
+          ? Object.fromEntries(
+              Object.entries(dto.data).map(([k, v]) => [k, String(v)]),
+            )
+          : {}),
+      };
+
+      const response = await this.firebaseAdmin.sendToMultipleDevices(
+        userTokens,
+        {
+          title: dto.title,
+          body: dto.body,
+          imageUrl: dto.imageUrl,
+          data: dataWithId,
+        },
       );
-      if (invalidTokens.length > 0) {
-        await this.fcmTokenRepository.update(
-          { token: In(invalidTokens) },
-          { isActive: false },
-        );
-        this.logger.debug(`Marked ${invalidTokens.length} tokens as inactive`);
+
+      if (response) {
+        sentCount += response.successCount;
+        failedCount += response.failureCount;
+
+        // Mark invalid tokens as inactive
+        const invalidTokens =
+          this.firebaseAdmin.getFailedTokensFromBatchResponse(
+            userTokens,
+            response,
+          );
+        if (invalidTokens.length > 0) {
+          await this.fcmTokenRepository.update(
+            { token: In(invalidTokens) },
+            { isActive: false },
+          );
+          this.logger.debug(`Marked ${invalidTokens.length} tokens as inactive`);
+        }
       }
-
-      // Mark notifications as sent
-      const notificationIds = savedNotifications.map((n) => n.id);
-      await this.notificationRepository.update(
-        { id: In(notificationIds) },
-        { isSent: true },
-      );
     }
+
+    // Mark notifications as sent
+    const notificationIds = savedNotifications.map((n) => n.id);
+    await this.notificationRepository.update(
+      { id: In(notificationIds) },
+      { isSent: true },
+    );
 
     return {
       notification: savedNotifications[0] || null,
