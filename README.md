@@ -23,6 +23,7 @@ This is a NestJS-based backend application designed to manage physical education
 
 ```
 src/
+├── achievements/          # Gamification and achievement system
 ├── auth/                  # Authentication and authorization
 ├── common/                # Shared utilities and constants
 ├── exercises/             # Exercise management
@@ -80,6 +81,13 @@ src/
    - Weekly activity data
    - Streak tracking (current and longest)
    - Routine completion statistics
+
+8. **Achievements & Gamification**
+   - Event-driven architecture for decoupled processing
+   - 21 auto-detected achievement types
+   - Streak, milestone, schedule, and category-based achievements
+   - Automatic push notifications on unlock
+   - Points system for user progression
 
 ## Setup and Installation
 
@@ -219,6 +227,11 @@ POST http://localhost:3000/api/v1/seed
 ### Statistics Endpoints
 
 - GET `/statistics/user` - Get user statistics and progress data
+
+### Achievements Endpoints
+
+- GET `/achievements` - Get user achievements (unlocked and locked)
+- GET `/achievements/stats` - Get achievement statistics (total points, etc.)
 
 ### Seed Endpoint
 
@@ -571,6 +584,245 @@ await this.notificationsService.createAndSend({
   data: { routineId },
   userId: studentId,
 });
+```
+
+## Achievements Module
+
+### Overview
+
+The Achievements module provides an automated gamification system that rewards users for completing milestones. It uses an **event-driven architecture** with NestJS EventEmitter for loose coupling between services.
+
+### Architecture
+
+```
+User completes exercise
+         │
+         ▼
+┌─────────────────────────────┐
+│  ExerciseProgressService    │
+│  toggleExercise()           │
+│  - Saves to DB              │
+│  - Emits event (async)      │
+└─────────────────────────────┘
+         │
+         │ emit('exercise.completed')
+         │ (non-blocking)
+         ▼
+┌─────────────────────────────┐
+│  EventEmitter2              │
+│  (Internal event bus)       │
+└─────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────┐
+│  AchievementsService        │
+│  @OnEvent listener          │
+│  - Checks all achievements  │
+│  - Unlocks if conditions met│
+└─────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────┐
+│  NotificationsService       │
+│  - Saves to DB              │
+│  - Sends push via FCM       │
+└─────────────────────────────┘
+```
+
+### Why Event-Driven?
+
+| Aspect | Benefit |
+|--------|---------|
+| **Decoupling** | ExerciseProgressService doesn't know about AchievementsService |
+| **Extensibility** | Add new listeners without modifying existing code |
+| **Performance** | User doesn't wait for achievement processing |
+| **Testability** | Each service can be tested independently |
+| **Maintainability** | Changes in achievements don't affect exercise-progress |
+
+### Achievement Types
+
+The system includes 21 auto-detected achievements:
+
+#### First-Time Achievements
+| Type | Trigger | Points |
+|------|---------|--------|
+| `first_exercise` | Complete first exercise | 10 |
+| `first_routine` | Complete routine at 100% | 50 |
+
+#### Streak Achievements
+| Type | Trigger | Points |
+|------|---------|--------|
+| `streak_3_days` | 3 consecutive days | 15 |
+| `streak_7_days` | 7 consecutive days | 30 |
+| `streak_14_days` | 14 consecutive days | 60 |
+| `streak_30_days` | 30 consecutive days | 150 |
+
+#### Exercise Milestones
+| Type | Trigger | Points |
+|------|---------|--------|
+| `exercises_10` | 10 total exercises | 20 |
+| `exercises_50` | 50 total exercises | 50 |
+| `exercises_100` | 100 total exercises | 100 |
+| `exercises_500` | 500 total exercises | 500 |
+
+#### Schedule-Based
+| Type | Trigger | Points |
+|------|---------|--------|
+| `early_bird` | 10 workouts before 7am | 40 |
+| `night_owl` | 10 workouts after 10pm | 40 |
+| `weekend_warrior` | Train on Saturday AND Sunday | 30 |
+
+#### Category Masters
+| Type | Trigger | Points |
+|------|---------|--------|
+| `cardio_master` | 50 cardio exercises | 60 |
+| `strength_master` | 50 strength exercises | 60 |
+| `flexibility_master` | 30 flexibility exercises | 40 |
+| `balanced_athlete` | All 3 categories in one week | 50 |
+
+#### Time Milestones
+| Type | Trigger | Points |
+|------|---------|--------|
+| `first_month` | Active for 1 month | 75 |
+| `quarter_year` | Active for 3 months | 150 |
+| `half_year` | Active for 6 months | 300 |
+| `one_year` | Active for 1 year | 500 |
+
+#### Resilience
+| Type | Trigger | Points |
+|------|---------|--------|
+| `comeback` | Return after 7+ days inactive | 25 |
+
+### API Endpoints
+
+#### Get User Achievements
+```bash
+GET /achievements
+Authorization: Bearer <user_jwt_token>
+```
+
+**Response:**
+```json
+{
+  "unlocked": [
+    {
+      "id": "uuid",
+      "achievementType": "first_exercise",
+      "unlockedAt": "2024-01-15T10:30:00Z",
+      "metadata": {},
+      "definition": {
+        "type": "first_exercise",
+        "title": "Primer Paso",
+        "description": "Completaste tu primer ejercicio...",
+        "icon": "trophy_first",
+        "points": 10,
+        "category": "first_time"
+      }
+    }
+  ],
+  "locked": [
+    {
+      "type": "streak_3_days",
+      "title": "Racha de 3 Días",
+      "description": "3 días consecutivos entrenando...",
+      "icon": "fire_3",
+      "points": 15,
+      "category": "streak"
+    }
+  ]
+}
+```
+
+#### Get Achievement Stats
+```bash
+GET /achievements/stats
+Authorization: Bearer <user_jwt_token>
+```
+
+**Response:**
+```json
+{
+  "totalUnlocked": 5,
+  "totalAvailable": 21,
+  "totalPoints": 105,
+  "recentAchievement": {
+    "id": "uuid",
+    "achievementType": "exercises_10",
+    "unlockedAt": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+### How It Works (Code Flow)
+
+**1. Event Emission** (`exercise-progress.service.ts`):
+```typescript
+// After saving exercise completion
+if (savedCompletion.isCompleted) {
+  this.eventEmitter.emit(
+    ACHIEVEMENT_EVENTS.EXERCISE_COMPLETED,
+    new ExerciseCompletedEvent(userId, assignmentId, routineExerciseId, true, completionDate)
+  );
+}
+```
+
+**2. Event Listener** (`achievements.service.ts`):
+```typescript
+@OnEvent(ACHIEVEMENT_EVENTS.EXERCISE_COMPLETED, { async: true })
+async handleExerciseCompleted(event: ExerciseCompletedEvent) {
+  // Run all checks in parallel
+  await Promise.all([
+    this.checkFirstExercise(event.userId),
+    this.checkExerciseMilestones(event.userId),
+    this.checkStreakAchievements(event.userId),
+    this.checkComebackAchievement(event.userId),
+    this.checkScheduleAchievements(event.userId, event.completionDate),
+    this.checkCategoryAchievements(event.userId),
+    this.checkTimeMilestones(event.userId),
+  ]);
+}
+```
+
+**3. Unlock Logic** (`achievements.service.ts`):
+```typescript
+private async unlockIfNotExists(userId, achievementType, metadata?) {
+  // Check if already unlocked (unique constraint)
+  const existing = await this.achievementRepo.findOne({ where: { userId, achievementType } });
+  if (existing) return false;
+
+  // Create achievement record
+  const achievement = this.achievementRepo.create({ userId, achievementType, metadata });
+  await this.achievementRepo.save(achievement);
+
+  // Send push notification
+  await this.sendAchievementNotification(userId, achievementType, metadata);
+
+  return true;
+}
+```
+
+### Database Schema
+
+```sql
+CREATE TABLE user_achievements (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  achievement_type VARCHAR NOT NULL,
+  metadata JSONB,
+  unlocked_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, achievement_type)
+);
+```
+
+### Using from Other Services
+
+```typescript
+// The achievement checks are automatic via events
+// No need to call AchievementsService directly
+
+// Just emit events when relevant actions occur:
+this.eventEmitter.emit(ACHIEVEMENT_EVENTS.EXERCISE_COMPLETED, event);
+this.eventEmitter.emit(ACHIEVEMENT_EVENTS.ROUTINE_PROGRESS_UPDATED, event);
 ```
 
 ## Contributing

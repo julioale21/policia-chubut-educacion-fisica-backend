@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RoutinesModule } from './routines/routines.module';
 import { RoutineAssignmentsModule } from './routine-assignments/routine-assignments.module';
 import { RoutineExcercisesModule } from './routine-excercises/routine-excercises.module';
@@ -11,10 +12,12 @@ import { ExerciseProgressModule } from './exercise-progress/exercise-progress.mo
 import { SeedModule } from './seed/seed.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AchievementsModule } from './achievements/achievements.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -43,6 +46,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     SeedModule,
     StatisticsModule,
     NotificationsModule,
+    AchievementsModule,
   ],
   controllers: [],
   providers: [],

@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ExerciseCompletion } from 'src/exercise-completions/entities/exercise-completion.entity';
 import { RoutineAssignment } from 'src/routine-assignments/entities/routine-assignment.entity';
 import { Repository } from 'typeorm';
 import { RoutineExercise } from 'src/routine-excercises/entities/routine-excercise.entity';
 import { ToggleExerciseDto } from './dto/toggle-exercise.dto';
+import { ACHIEVEMENT_EVENTS } from '../achievements/constants/achievement-events';
+import { ExerciseCompletedEvent } from '../achievements/events/exercise-completed.event';
+import { RoutineProgressUpdatedEvent } from '../achievements/events/routine-progress-updated.event';
 
 export interface ExercisesByDay {
   [key: string]: RoutineExercise[];
@@ -35,9 +39,10 @@ export class ExerciseProgressService {
     private completionRepo: Repository<ExerciseCompletion>,
     @InjectRepository(RoutineAssignment)
     private assignmentRepo: Repository<RoutineAssignment>,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async toggleExercise(toggleExerciseDto: ToggleExerciseDto) {
+  async toggleExercise(toggleExerciseDto: ToggleExerciseDto, userId: string) {
     const { assignmentId, routineExerciseId, extras } = toggleExerciseDto;
 
     const existingCompletion = await this.completionRepo.findOne({
@@ -45,27 +50,64 @@ export class ExerciseProgressService {
         routineAssignment: { id: assignmentId },
         routineExercise: { id: routineExerciseId },
       },
-      relations: ['routineExercise'], // Añadimos la relación
+      relations: ['routineExercise'],
     });
+
+    let savedCompletion: ExerciseCompletion;
 
     if (existingCompletion) {
       existingCompletion.isCompleted = !existingCompletion.isCompleted;
       if (extras) {
         Object.assign(existingCompletion, extras);
       }
-      return this.completionRepo.save(existingCompletion);
+      savedCompletion = await this.completionRepo.save(existingCompletion);
+    } else {
+      const completion = this.completionRepo.create({
+        routineAssignment: { id: assignmentId },
+        routineExercise: { id: routineExerciseId },
+        completionDate: new Date(),
+        isCompleted: true,
+        ...extras,
+      });
+      savedCompletion = await this.completionRepo.save(completion);
     }
 
-    // Primero verificamos que el routineExercise existe
-    const completion = this.completionRepo.create({
-      routineAssignment: { id: assignmentId },
-      routineExercise: { id: routineExerciseId },
-      completionDate: new Date(),
-      isCompleted: true,
-      ...extras,
-    });
+    // Emit events for achievement system (async, non-blocking)
+    if (savedCompletion.isCompleted) {
+      this.eventEmitter.emit(
+        ACHIEVEMENT_EVENTS.EXERCISE_COMPLETED,
+        new ExerciseCompletedEvent(
+          userId,
+          assignmentId,
+          routineExerciseId,
+          true,
+          savedCompletion.completionDate || new Date(),
+        ),
+      );
 
-    return this.completionRepo.save(completion);
+      // Check routine completion percentage
+      const progress = await this.getRoutineProgress(assignmentId);
+      if (progress.percentage === 100) {
+        const assignment = await this.assignmentRepo.findOne({
+          where: { id: assignmentId },
+          relations: ['routine'],
+        });
+
+        if (assignment?.routine) {
+          this.eventEmitter.emit(
+            ACHIEVEMENT_EVENTS.ROUTINE_PROGRESS_UPDATED,
+            new RoutineProgressUpdatedEvent(
+              userId,
+              assignmentId,
+              100,
+              assignment.routine.name,
+            ),
+          );
+        }
+      }
+    }
+
+    return savedCompletion;
   }
 
   async getRoutineProgress(assignmentId: string): Promise<RoutineProgress> {
